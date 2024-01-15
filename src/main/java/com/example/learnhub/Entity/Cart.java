@@ -1,9 +1,6 @@
 package com.example.learnhub.Entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
@@ -13,17 +10,18 @@ import java.util.Date;
 @Table(name = "Cart")
 public class Cart {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CartID")
     private Integer cartId;
 
     @Column(name = "Total")
     private Double total;
 
-    @Column(name = "UserID")
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "UserID")  // Assuming "accountId" is the foreign key column in the Cart table
+    private User user;  // Change to the correct attribute name for the relationship
 
     @Column(name = "CartDate")
     private Date cartDate;
-
 
 }

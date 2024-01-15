@@ -1,17 +1,17 @@
 package com.example.learnhub.Entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
+
 @Data
 @Entity
 @Table(name = "Course")
 public class Course {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CourseID")
     private Integer courseId;
 
@@ -24,17 +24,20 @@ public class Course {
     @Column(name = "CoursePrice")
     private Double coursePrice;
 
-    @Column(name = "CategoryID")
-    private Integer categoryId;
+    @ManyToOne
+    @JoinColumn(name = "CategoryID")
+    private Category category;
 
     @Column(name = "IsPassed")
     private Boolean isPassed;
 
     @Column(name = "CourseDate")
+    @CreationTimestamp
     private Date courseDate;
 
-    @Column(name = "RatingID")
-    private Integer ratingId;
+    @ManyToOne
+    @JoinColumn(name = "RatingID")
+    private Rating rating;
 
     @Column(name = "Level")
     private String level;
@@ -42,7 +45,14 @@ public class Course {
     @Column(name = "Tag")
     private String tag;
 
-    @Column(name = "UserID")
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "UserID")
+    private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "WishlistID")
+    private Wishlist wishlist;
+
+
+    // Constructors, getters, setters, and other methods as needed
 }

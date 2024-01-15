@@ -1,9 +1,6 @@
 package com.example.learnhub.Entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
@@ -11,14 +8,16 @@ import lombok.Data;
 @Table(name = "CartItem")
 public class CartItem {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CartItemID")
     private Integer cartItemId;
 
-    @Column(name = "CourseID")
-    private Integer courseId;
+    @ManyToOne
+    @JoinColumn(name = "CourseID")
+    private Course course;
 
-    @Column(name = "CartID")
-    private Integer cartId;
-
+    @ManyToOne
+    @JoinColumn(name = "CartID")
+    private Cart cart;
 
 }

@@ -1,30 +1,30 @@
 package com.example.learnhub.Entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
-
 
 @Data
 @Entity
 @Table(name = "Comment")
 public class Comment {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CommentID")
     private Integer commentId;
 
     @Column(name = "CommentText")
     private String commentText;
 
-    @Column(name = "UserID")
-    private Integer userId;
+    @ManyToOne
+    @JoinColumn(name = "UserID")
+    private User user;
 
-    @Column(name = "CourseID")
-    private Integer courseId;
+    @ManyToOne
+    @JoinColumn(name = "CourseID")
+    private Course course;
 
-    @Column(name = "VideoID")
-    private Integer videoId;
+    @ManyToOne
+    @JoinColumn(name = "VideoID")
+    private Video video;
 
 }

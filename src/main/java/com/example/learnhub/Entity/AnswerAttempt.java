@@ -1,9 +1,6 @@
 package com.example.learnhub.Entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
@@ -11,6 +8,7 @@ import lombok.Data;
 @Table(name = "AnswerAttempt")
 public class AnswerAttempt {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "AttemptID")
     private Integer attemptId;
 
@@ -21,27 +19,5 @@ public class AnswerAttempt {
     @Column(name = "SelectedAnswerID")
     private Integer selectedAnswerId;
 
-    public Integer getAttemptId() {
-        return this.attemptId;
-    }
 
-    public void setAttemptId(Integer attemptId) {
-        this.attemptId = attemptId;
-    }
-
-    public Integer getQuestionId() {
-        return this.questionId;
-    }
-
-    public void setQuestionId(Integer questionId) {
-        this.questionId = questionId;
-    }
-
-    public Integer getSelectedAnswerId() {
-        return this.selectedAnswerId;
-    }
-
-    public void setSelectedAnswerId(Integer selectedAnswerId) {
-        this.selectedAnswerId = selectedAnswerId;
-    }
 }
