@@ -24,9 +24,8 @@ public class Course {
     @Column(name = "CoursePrice")
     private Double coursePrice;
 
-    @ManyToOne
-    @JoinColumn(name = "CategoryID")
-    private Category category;
+    @Column(name = "CategoryID")
+    private Integer categoryId;
 
     @Column(name = "IsPassed")
     private Boolean isPassed;
@@ -35,9 +34,8 @@ public class Course {
     @CreationTimestamp
     private Date courseDate;
 
-    @ManyToOne
-    @JoinColumn(name = "RatingID")
-    private Rating rating;
+    @Column(name = "RatingID")
+    private Integer ratingId;
 
     @Column(name = "Level")
     private String level;
@@ -45,14 +43,12 @@ public class Course {
     @Column(name = "Tag")
     private String tag;
 
-    @ManyToOne
-    @JoinColumn(name = "UserID")
-    private User user;
+    @Column(name = "UserID")
+    private Integer userId;
 
-    @ManyToOne
-    @JoinColumn(name = "WishlistID")
-    private Wishlist wishlist;
-
+    @OneToOne
+    @JoinColumn(name = "ImageID")
+    private Image image;
 
     // Constructors, getters, setters, and other methods as needed
 }

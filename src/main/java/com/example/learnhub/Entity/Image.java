@@ -15,7 +15,8 @@ public class Image {
     @Column(name = "ImageURL")
     private String imageUrl;
 
-    @OneToOne(mappedBy = "image")  // Assuming a One-to-One relationship with another entity
-    private Course course;  // Adjust the entity name and attribute accordingly
+    @OneToOne(mappedBy = "image")
+    private Course course;
 
+    // Constructors, getters, setters, and other methods as needed
 }
