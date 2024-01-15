@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends JpaRepository<User, Integer> {
-    boolean existByUsername(String username);
+    public boolean existByUsername(String username);
 
     List<User> findByRoleID(String roleID);
     List<User> findByUserNameContaining(String username);
