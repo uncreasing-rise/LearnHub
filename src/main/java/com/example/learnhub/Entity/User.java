@@ -1,10 +1,12 @@
 package com.example.learnhub.Entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Entity
+@Builder
 @Table(name = "User")
 public class User {
     @Id
