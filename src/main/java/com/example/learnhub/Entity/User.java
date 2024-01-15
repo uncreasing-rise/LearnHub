@@ -20,8 +20,6 @@ public class User {
     @Column(name = "UserPassword")
     private String userPassword;
 
-    @Column(name = "Role")
-    private String role;
 
     @Column(name = "Image")
     private String image;
