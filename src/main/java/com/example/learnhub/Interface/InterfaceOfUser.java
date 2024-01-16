@@ -17,7 +17,7 @@ public interface InterfaceOfUser {
 
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.CREATED)
-    UserDTO createAccount(String username, String firstname, String lastname, MultipartFile image, String pass) throws AppServiceExeption, IOException, com.example.learnhub.Exceptions.AppServiceExeption;
+    UserDTO createAccount(String email, String fullName, MultipartFile image, String pass) throws AppServiceExeption, IOException, com.example.learnhub.Exceptions.AppServiceExeption;
 
 
 

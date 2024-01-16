@@ -13,9 +13,6 @@ public class UserDTO {
 
     private Integer userID;
 
-    @NotBlank(message = "User Name is required")
-    private String userName;
-
     @NotBlank(message = "Password cannot be blank")
     private String userPassword;
 

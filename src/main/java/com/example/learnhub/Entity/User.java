@@ -1,7 +1,6 @@
 package com.example.learnhub.Entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,9 +13,6 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false, unique = true, name = "UserID")
     private Integer userId;
-
-    @Column(nullable = false, unique = true, name = "UserName")
-    private String userName;
 
     @Column(nullable = false, name = "UserPassword")
     private String userPassword;
@@ -39,9 +35,8 @@ public class User {
     @Column(nullable = false, name = "roleId")
     private Integer roleId;
 
-    public User(Integer userId, String userName, String userPassword, String image, String facebook, String email, String fullName, String token, Integer roleId) {
+    public User(Integer userId, String userPassword, String image, String facebook, String email, String fullName, String token, Integer roleId) {
         this.userId = userId;
-        this.userName = userName;
         this.userPassword = userPassword;
         this.image = image;
         this.facebook = facebook;

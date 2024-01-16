@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping ("/api/v1/users")
 public class UserController {
 
     @Autowired
@@ -25,26 +26,21 @@ public class UserController {
     @Autowired
     private MailService mailService;
 
-    @PostMapping("/users")
+    @PostMapping("/register")
     public ResponseEntity<Object> createAccount(@RequestBody User user) {
         try {
             Optional<User> userByEmail = userRepository.findByEmail(user.getEmail());
-            Optional<User> userByUserName = userRepository.findByUserName(user.getUserName());
 
             if (userByEmail.isPresent()) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("Email already exists");
-            } else if (userByUserName.isPresent()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                        .body("Username already exists");
-            } else {
+            }  else {
                 if (user.getToken() != null) {
                     boolean sendToken = sendMailToReceiver(user.getEmail(), user.getToken());
                 }
 
                 User _user = userRepository.save(new User(
                         user.getUserId(),
-                        user.getUserName(),
                         user.getUserPassword(),
                         user.getImage(),
                         user.getFacebook(),

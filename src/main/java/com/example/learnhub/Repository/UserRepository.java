@@ -14,12 +14,10 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findByRoleId(Integer roleId);
-    boolean existsByUserName(String userName);
     boolean existsByEmail(String email);
-    List<User> findByUserNameContaining(String userName);
     Optional<User> findByUserId(Integer userId);
     Optional<User> findByEmail(String email);
-    Optional<User> findByUserName(String userName);
+
 
     @Modifying
     @Transactional
