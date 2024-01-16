@@ -11,7 +11,7 @@ import lombok.*;
 @Setter
 public class UserDTO {
 
-    private int userID;
+    private Integer userID;
 
     @NotBlank(message = "User Name is required")
     private String userName;
@@ -20,7 +20,7 @@ public class UserDTO {
     private String userPassword;
 
 
-    private byte[] image;
+    private String image;
     private String facebook;
 
     @NotBlank(message = "Email is required")

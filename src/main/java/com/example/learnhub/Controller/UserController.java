@@ -1,55 +1,83 @@
 package com.example.learnhub.Controller;
 
-
+import com.example.learnhub.Exceptions.AppServiceExeption;
+import com.example.learnhub.MailConfig.MailDetail;
 import com.example.learnhub.Entity.User;
-import com.example.learnhub.service.IUserService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import com.example.learnhub.Repository.UserRepository;
+import com.example.learnhub.MailConfig.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.learnhub.DTO.*;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("api/v1/users")
 public class UserController {
-    private final IUserService userService;
 
     @Autowired
-    public UserController(IUserService userService) {
-        this.userService = userService;
-    }
-    @PostMapping("/register")
-    public ResponseEntity<?> createUser(
-            @Valid@RequestBody UserDTO userDTO,
-            BindingResult result
-            ){
-        try{
-            if (result.hasErrors()){
-                List<String> errorMessages = result.getFieldErrors()
-                        .stream()
-                        .map(FieldError::getDefaultMessage)
-                        .toList();
-                return ResponseEntity.badRequest().body(errorMessages);
+    private UserRepository userRepository;
+
+    @Autowired
+    private MailService mailService;
+
+    @PostMapping("/users")
+    public ResponseEntity<Object> createAccount(@RequestBody User user) {
+        try {
+            Optional<User> userByEmail = userRepository.findByEmail(user.getEmail());
+            Optional<User> userByUserName = userRepository.findByUserName(user.getUserName());
+
+            if (userByEmail.isPresent()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Email already exists");
+            } else if (userByUserName.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                        .body("Username already exists");
+            } else {
+                if (user.getToken() != null) {
+                    boolean sendToken = sendMailToReceiver(user.getEmail(), user.getToken());
+                }
+
+                User _user = userRepository.save(new User(
+                        user.getUserId(),
+                        user.getUserName(),
+                        user.getUserPassword(),
+                        user.getImage(),
+                        user.getFacebook(),
+                        user.getEmail(),
+                        user.getFullName(),
+                        user.getToken(),
+                        user.getRoleId()
+                ));
+
+                return ResponseEntity.status(HttpStatus.CREATED)
+                        .body(_user);
             }
-            userService.createUser(userDTO);
-            return ResponseEntity.ok("Register Successfully");
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception | AppServiceExeption e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Internal Server Error");
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(
-            @Valid@RequestBody User userLoginDTO){
-        return ResponseEntity.ok("some token");
+
+    private boolean sendMailToReceiver(String email, String token) throws AppServiceExeption, IOException {
+        String messageBody = "Hello,\n" +
+                "Please enter the verification code below on the LearnHub website\n\n" +
+                token + "\n\n" +
+                "If you didn't request this, you can ignore this email or let us know.\n" +
+                "Thanks! LearnHub team";
+
+        String subject = "LearnHub OTP verification";
+
+        MailDetail mailDetail = new MailDetail();
+        mailDetail.setMsgBody(messageBody);
+        mailDetail.setRecipient(email);
+        mailDetail.setSubject(subject);
+        mailService.sendMail(mailDetail);
+
+        return true;
     }
 }

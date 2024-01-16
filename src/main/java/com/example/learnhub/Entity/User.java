@@ -3,11 +3,12 @@ package com.example.learnhub.Entity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-@Builder
-@Table(name = "User")
+@NoArgsConstructor
+@Table(name = "[dbo].[User]")  // Assuming the table name in the database is "User"
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,21 +21,33 @@ public class User {
     @Column(nullable = false, name = "UserPassword")
     private String userPassword;
 
-    @Column(nullable = false, name = "Image")
+    @Column(nullable = false, name = "Image", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
     private String image;
 
-    @Column(nullable = false, name = "Facebook")
+    @Column(nullable = false, name = "Facebook", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
     private String facebook;
 
-    @Column(nullable = false, name = "Email")
+    @Column(nullable = false, name = "Email", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
     private String email;
 
-    @Column(nullable = false, name = "FullName")
+    @Column(nullable = false, name = "FullName", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
     private String fullName;
 
-    @ManyToOne
-    @JoinColumn(name = "RoleID")
-    private Role role;
+    @Column(nullable = false, name = "token", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
+    private String token;
 
-    // Constructors, getters, setters, and other methods as needed
+    @Column(nullable = false, name = "roleId")
+    private Integer roleId;
+
+    public User(Integer userId, String userName, String userPassword, String image, String facebook, String email, String fullName, String token, Integer roleId) {
+        this.userId = userId;
+        this.userName = userName;
+        this.userPassword = userPassword;
+        this.image = image;
+        this.facebook = facebook;
+        this.email = email;
+        this.fullName = fullName;
+        this.token = token;
+        this.roleId = roleId;
+    }
 }

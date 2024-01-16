@@ -1,4 +1,4 @@
-package com.example.learnhub.service;
+package com.example.learnhub.Interface;
 
 import com.example.learnhub.DTO.UserDTO;
 import com.example.learnhub.Entity.User;
