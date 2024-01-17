@@ -50,5 +50,4 @@ public class Course {
     @JoinColumn(name = "ImageID")
     private Image image;
 
-    // Constructors, getters, setters, and other methods as needed
 }

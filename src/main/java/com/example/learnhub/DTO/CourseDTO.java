@@ -3,6 +3,8 @@ package com.example.learnhub.DTO;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
+
 @Data
 public class CourseDTO {
     private Integer courseId;
@@ -16,5 +18,11 @@ public class CourseDTO {
     private String level;
     private String tag;
     private Integer userId;
+    private List<CategoryDTO> categories;
+    private List<SectionDTO> sections;
+    private LearningDetailDTO learningDetails;
+
+
+
 
 }
