@@ -2,19 +2,24 @@ package com.example.learnhub.Controller;
 
 
  import com.example.learnhub.DTO.UserDTO;
-import com.example.learnhub.Exceptions.AppServiceExeption;
+ import com.example.learnhub.DTO.user.request.UserLoginRequest;
+ import com.example.learnhub.DTO.user.response.UserLoginResponse;
+ import com.example.learnhub.Exceptions.AppServiceExeption;
 import com.example.learnhub.MailConfig.MailDetail;
 import com.example.learnhub.Entity.User;
 import com.example.learnhub.Repository.UserRepository;
 import com.example.learnhub.MailConfig.MailService;
-import org.springframework.beans.factory.annotation.Autowired;
+ import com.example.learnhub.security.UserDetailsImpl;
+ import com.example.learnhub.security.jwt.JWTUtils;
+ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+ import java.util.Objects;
+ import java.util.Optional;
 
 @RestController
 @RequestMapping ("/api/v1/users")
@@ -162,6 +167,29 @@ public class UserController {
             }
             return new ResponseEntity<>(users, HttpStatus.OK);
         } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @PostMapping("/login")
+    public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest request){
+        try {
+            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+            if(Objects.isNull(user)){
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            if (!user.getUserPassword().equals(request.getPassword())){
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            UserDetailsImpl userDetails = UserDetailsImpl.build(user);
+            String accessToken = JWTUtils.generateAccessToken(userDetails, user);
+            String refreshToken = JWTUtils.generateRefreshToken(userDetails);
+            UserLoginResponse response = new UserLoginResponse()
+                .setAccessToken(accessToken)
+                .setRefreshToken(refreshToken);
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        } catch (Exception e){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

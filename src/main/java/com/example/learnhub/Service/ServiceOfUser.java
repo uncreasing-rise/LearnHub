@@ -27,12 +27,11 @@ public class ServiceOfUser implements InterfaceOfUser {
 
     @Override
     public User createAccount(CreateUserDTO dto) throws AppServiceExeption {
-        if(userRepository.existsByUserName(dto.getUsername()))
+        if(userRepository.existsByEmail(dto.getEmail()))
         {
             throw new AppServiceExeption("User already existed!");
         }
         User user = new User();
-        user.setUserName(dto.getUsername());
         user.setImage(dto.getImage());
         user.setUserPassword(dto.getPassword());
         user.setFacebook(dto.getFacebook());
@@ -40,7 +39,7 @@ public class ServiceOfUser implements InterfaceOfUser {
     }
 
     @Override
-    public UserDTO createAccount(String username, String firstname, String lastname, MultipartFile image, String pass) throws AppServiceExeption, IOException {
+    public UserDTO createAccount(String email, String fullName, MultipartFile image, String pass) throws AppServiceExeption, IOException {
         return null;
     }
 
