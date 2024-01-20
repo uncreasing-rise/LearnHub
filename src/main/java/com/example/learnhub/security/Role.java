@@ -4,10 +4,10 @@ import org.springframework.security.core.GrantedAuthority;
 
 public enum Role implements GrantedAuthority {
 
-    SUPER_ADMIN(Code.SUPER_ADMIN),
     ADMIN(Code.ADMIN),
+    COURSEMANAGER(Code.COURSEMANAGER),
 
-    TRAINER(Code.TRAINER);
+    STUDENT(Code.STUDENT);
 
     private final String authority;
 
@@ -21,8 +21,8 @@ public enum Role implements GrantedAuthority {
     }
 
     public class Code {
-        public static final String SUPER_ADMIN = "ROLE_SUPER_ADMIN";
         public static final String ADMIN = "ROLE_ADMIN";
-        public static final String TRAINER = "ROLE_TRAINER";
+        public static final String COURSEMANAGER = "ROLE_COURSEMANAGER";
+        public static final String STUDENT = "ROLE_STUDENT";
     }
 }

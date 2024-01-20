@@ -8,8 +8,8 @@ import lombok.experimental.Accessors;
 @Data
 @Entity
 @NoArgsConstructor
-@Table(name = "[dbo].[User]")  // Assuming the table name in the database is "User"
-//@Table(name = "users")  // Assuming the table name in the database is "User" . Do not delete this comment
+//@Table(name = "[dbo].[User]")  // Assuming the table name in the database is "User"
+@Table(name = "users")  // Assuming the table name in the database is "User" . Do not delete this comment
 @Accessors(chain = true)
 public class User {
     @Id

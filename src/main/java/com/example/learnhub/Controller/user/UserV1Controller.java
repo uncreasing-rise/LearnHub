@@ -63,7 +63,7 @@ public class UserV1Controller {
                 throw new BusinessException(ErrorMessage.USER_EMAIL_EXISTED);
             }
 
-            List<Role> roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.TRAINER.name());
+            List<Role> roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.STUDENT.name());
             String randomString = RandomStringGenerator.generateRandomString(6);
             user = new User()
                 .setEmail(request.getEmail())
