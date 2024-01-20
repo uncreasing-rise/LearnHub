@@ -3,11 +3,14 @@ package com.example.learnhub.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 
 @Data
 @Entity
 @NoArgsConstructor
 @Table(name = "[dbo].[User]")  // Assuming the table name in the database is "User"
+//@Table(name = "users")  // Assuming the table name in the database is "User" . Do not delete this comment
+@Accessors(chain = true)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +37,11 @@ public class User {
 
     @Column(nullable = false, name = "roleId")
     private Integer roleId;
+
+    @Column(name = "enable", nullable = false)
+    private Boolean enable;
+
+    private String stringRandom;
 
     public User(Integer userId, String userPassword, String image, String facebook, String email, String fullName, String token, Integer roleId) {
         this.userId = userId;
