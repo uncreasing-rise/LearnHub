@@ -8,14 +8,25 @@ import lombok.NoArgsConstructor;
 @Data
 @Entity
 @Table(name = "Role")
-@AllArgsConstructor
 @NoArgsConstructor
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "roleId")
+
     private Integer roleId;  // Corrected the property name
 
     @Column(name = "RoleName")
     private String roleName;
+
+
+    public Role(Integer id, String name ) {
+        this.roleId = id;
+        this.roleName = name;
+    }
+
+
+    public Role(String name ) {
+        this.roleName = name;
+    }
 }
