@@ -1,5 +1,6 @@
 package com.example.learnhub.DTO;
 
+import com.example.learnhub.Entity.Section;
 import lombok.Data;
 
 @Data
@@ -8,6 +9,6 @@ public class VideoDTO {
     private String videoData;
     private String videoScript;
     private Boolean isTrial;
-    private Integer sectionId;
+    private Integer sectionID;
 
 }

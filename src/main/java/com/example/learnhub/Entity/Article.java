@@ -1,5 +1,6 @@
 package com.example.learnhub.Entity;
 
+import com.google.api.client.util.PemReader;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,5 +19,7 @@ public class Article {
     @ManyToOne
     @JoinColumn(name = "SectionID", nullable = false)
     private Section section;
+    @Column(name = "ArticleTitle")
+    private String articleTitle;
 
 }

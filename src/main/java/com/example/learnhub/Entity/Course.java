@@ -4,12 +4,15 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "Course")
 public class Course {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "CourseID")
@@ -34,8 +37,8 @@ public class Course {
     @CreationTimestamp
     private Date courseDate;
 
-    @Column(name = "RatingID")
-    private Integer ratingId;
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Rating> ratings = new ArrayList<>();
 
     @Column(name = "Level")
     private String level;
@@ -46,8 +49,31 @@ public class Course {
     @Column(name = "UserID")
     private Integer userId;
 
-    @OneToOne
-    @JoinColumn(name = "ImageID")
-    private Image image;
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images;
 
+    @Column(name = "Status")
+    private Integer status = 0;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Section> sections = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "CategoryID", insertable = false, updatable = false)
+    private Category category;
+
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private LearningDetail learningDetail;
+
+
+    @ManyToMany
+    @JoinTable(
+            name = "User_Course",
+            joinColumns = @JoinColumn(name = "CourseID"),
+            inverseJoinColumns = @JoinColumn(name = "UserID")
+    )
+    private List<User> users = new ArrayList<>();
+
+
+    // getters and setters
 }

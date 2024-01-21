@@ -1,5 +1,6 @@
 package com.example.learnhub.Entity;
 
+import com.google.api.client.util.PemReader;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,8 +22,7 @@ public class Video {
     @Column(name = "isTrial")
     private Boolean isTrial;
 
-    @ManyToOne
-    @JoinColumn(name = "SectionID")
-    private Section section;
+    @Column(name = "SectionID")
+    private Integer sectionID;
 
 }

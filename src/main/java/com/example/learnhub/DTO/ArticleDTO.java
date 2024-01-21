@@ -7,6 +7,6 @@ public class ArticleDTO {
     private Integer articleId;
     private String articleData;
     private Integer sectionId;
-
+    private String articleTitle;
 
 }

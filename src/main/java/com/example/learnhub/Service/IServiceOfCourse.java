@@ -1,18 +1,23 @@
 package com.example.learnhub.Service;
 
+import com.example.learnhub.DTO.CourseDTO;
+import com.example.learnhub.DTO.SectionDTO;
 import com.example.learnhub.Entity.Course;
+import com.example.learnhub.Exceptions.AppServiceExeption;
+import com.example.learnhub.Exceptions.CourseNotFoundException;
 
 import java.util.List;
 
 public interface IServiceOfCourse {
-    List<Course> getAllCourses();
+    CourseDTO createCourse(CourseDTO dto) throws AppServiceExeption;
 
-    Course getCourseById(int courseId);
+    void createSectionsAndContents(Course course, List<SectionDTO> sections);
 
-    Course createCourse(Course course);
+    List<CourseDTO> findCoursesByInstructorId(int id) throws CourseNotFoundException;
 
-    Course updateCourse(int courseId, Course updatedCourse);
+    List<CourseDTO> getCourseList();
 
-    void deleteCourse(int courseId);
+    int updateCourseStatus(int courseId, int status);
 
+    int deleteCourseById(int courseId);
 }

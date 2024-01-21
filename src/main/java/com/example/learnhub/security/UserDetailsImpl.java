@@ -19,14 +19,6 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-//    public UserDetailsImpl(int id, String email, String password, Collection<? extends GrantedAuthority> authorities) {
-//        this.id = id;
-//        this.email = email;
-//        this.password = password;
-//        this.authorities = authorities;
-//    }
-
-
     public UserDetailsImpl(int id, String email, String password) {
         this.id = id;
         this.email = email;
@@ -34,7 +26,6 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     public static UserDetailsImpl build(User user) {
-//        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(user.getRole().getRole()));
         return new UserDetailsImpl(user.getUserId(), user.getEmail(), user.getUserPassword());
     }
 

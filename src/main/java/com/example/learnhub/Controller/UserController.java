@@ -82,51 +82,9 @@ public class UserController {
 
         return true;
     }
-    @PostMapping("/users/checkToken")
-    public ResponseEntity<User> checkToken(@RequestParam int id, @RequestParam String token) {
-        Optional<User> userAccount = userRepository.findById(id);
-        if (userAccount.isPresent()) {
-            if (userAccount.get().getToken().equals(token)) {
-                int updateToken = userRepository.updateToken(id);
-                return new ResponseEntity<>(HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
 
-
-    //LOGIN
-    @PostMapping("/users/login")
-    public ResponseEntity<UserDTO> loginAccount(@RequestParam String email, @RequestParam String password) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-
-            if (user.getUserPassword().equals(password)) {
-                UserDTO userDTO = new UserDTO();
-                userDTO.setUserID(user.getUserId());
-                userDTO.setFullName(user.getFullName());
-                userDTO.setImage(user.getImage());
-                userDTO.setEmail(user.getEmail());
-                userDTO.setRoleId(user.getRoleId());
-                userDTO.setFacebook(user.getFacebook());
-
-                return new ResponseEntity<>(userDTO, HttpStatus.OK);
-            } else {
-                // Incorrect password
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
-        } else {
-            // User not found
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
     //UPDATE
-    @PutMapping("/users")
+    @PutMapping("/updates")
     public ResponseEntity<User> updateAccount(@RequestBody User user) {
         Optional<User> userData = userRepository.findById(user.getUserId());
 

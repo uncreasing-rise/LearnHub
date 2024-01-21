@@ -15,7 +15,7 @@ public class Rating {
     private Integer ratingId;
 
     @Column(name = "RatingValue")
-    private Double ratingValue;
+    private Integer ratingValue;
 
     @ManyToOne
     @JoinColumn(name = "CourseID")

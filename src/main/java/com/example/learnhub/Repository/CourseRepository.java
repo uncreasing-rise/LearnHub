@@ -4,10 +4,12 @@ import com.example.learnhub.Entity.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Integer> {
@@ -28,7 +30,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Course c SET c.image = ?2 WHERE c.courseId = ?1")
+    @Query("UPDATE Course c SET c.images = ?2 WHERE c.courseId = ?1")
     int updateMainImage(int courseId, String imageName);
 
     @Query("SELECT c FROM Course c ORDER BY c.coursePrice DESC")
@@ -48,5 +50,21 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     @Query("DELETE FROM Course c WHERE c.courseId = ?1")
     int deleteViolatedCourse(int courseId);
 
+
     Course findById(int courseId);
+
+    @Query("SELECT c FROM Course c WHERE c.status = 1")
+    List<Course> displayIsNotApprovedCourses();
+
+    @Query("SELECT c FROM Course c WHERE c.categoryId = :categoryId")
+    List<Course> findByCategory(@Param("categoryId") String categoryId);
+
+    ;
+
+    @Query("SELECT c FROM Course c WHERE c.status <> 2")
+    List<Course> findUnapprovedCourses();
+
+    @Query("SELECT c FROM Course c WHERE c.courseTitle LIKE %:keyword% OR c.courseDes LIKE %:keyword%")
+    List<Course> findByKeyword(@Param("keyword") String keyword);
+
 }

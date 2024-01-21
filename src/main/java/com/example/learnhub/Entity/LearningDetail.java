@@ -12,9 +12,12 @@ public class LearningDetail {
     @Column(name = "LearningDetailID")
     private Integer learningDetailId;
 
-    @ManyToOne
-    @JoinColumn(name = "CourseID")
+
+    @OneToOne
+    @JoinColumn(name = "CourseID") // Assuming you have a column named "course_id" in the LearningDetail table
     private Course course;
+
+
 
     @Column(name = "Benefit")
     private String benefit;

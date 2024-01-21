@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Entity
 @NoArgsConstructor
@@ -20,19 +23,19 @@ public class User {
     @Column(nullable = false, name = "UserPassword")
     private String userPassword;
 
-    @Column(nullable = false, name = "Image", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
+    @Column(nullable = false, name = "Image", columnDefinition = "nvarchar(max)")
     private String image;
 
-    @Column(nullable = false, name = "Facebook", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
+    @Column(nullable = false, name = "Facebook", columnDefinition = "nvarchar(max)")
     private String facebook;
 
-    @Column(nullable = false, name = "Email", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
+    @Column(nullable = false, name = "Email", columnDefinition = "nvarchar(max)")
     private String email;
 
-    @Column(nullable = false, name = "FullName", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
+    @Column(nullable = false, name = "FullName", columnDefinition = "nvarchar(max)")
     private String fullName;
 
-    @Column(nullable = false, name = "token", columnDefinition = "nvarchar(max)")  // Adjust the columnDefinition
+    @Column(nullable = false, name = "token", columnDefinition = "nvarchar(max)")
     private String token;
 
     @Column(nullable = false, name = "roleId")
@@ -43,6 +46,14 @@ public class User {
 
     private String stringRandom;
 
+    @ManyToMany
+    @JoinTable(
+            name = "User_Course",
+            joinColumns = @JoinColumn(name = "UserID"),
+            inverseJoinColumns = @JoinColumn(name = "CourseID")
+    )
+    private List<Course> courses = new ArrayList<>();
+
     public User(Integer userId, String userPassword, String image, String facebook, String email, String fullName, String token, Integer roleId) {
         this.userId = userId;
         this.userPassword = userPassword;
@@ -52,5 +63,17 @@ public class User {
         this.fullName = fullName;
         this.token = token;
         this.roleId = roleId;
+    }
+
+    // Helper method to add a course to the user
+    public void addCourse(Course course) {
+        courses.add(course);
+        course.getUsers().add(this);
+    }
+
+    // Helper method to remove a course from the user
+    public void removeCourse(Course course) {
+        courses.remove(course);
+        course.getUsers().remove(this);
     }
 }

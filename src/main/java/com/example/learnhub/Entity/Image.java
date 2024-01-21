@@ -15,8 +15,10 @@ public class Image {
     @Column(name = "ImageURL")
     private String imageUrl;
 
-    @OneToOne(mappedBy = "image")
+    @ManyToOne
+    @JoinColumn(name = "CourseID", nullable = false)
     private Course course;
+
 
     // Constructors, getters, setters, and other methods as needed
 }
