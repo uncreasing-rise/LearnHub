@@ -7,7 +7,9 @@ import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,9 +27,25 @@ public class UserDetailsImpl implements UserDetails {
         this.password = password;
     }
 
+
+    public UserDetailsImpl(int id, String email, String password, List<Role> roles) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.authorities = roles;
+    }
+
     public static UserDetailsImpl build(User user) {
         return new UserDetailsImpl(user.getUserId(), user.getEmail(), user.getUserPassword());
     }
+
+
+    public static UserDetailsImpl build(User user, String role) {
+        List<Role> roleList  = new ArrayList<>();
+        roleList.add(Role.findByAbbr(role));
+        return new UserDetailsImpl(user.getUserId(), user.getEmail(), user.getUserPassword(),roleList);
+    }
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

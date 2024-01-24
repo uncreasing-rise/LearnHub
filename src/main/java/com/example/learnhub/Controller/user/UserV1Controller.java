@@ -5,7 +5,9 @@ import com.example.learnhub.DTO.common.enums.ErrorMessage;
 import com.example.learnhub.DTO.common.response.ApiResponse;
 import com.example.learnhub.DTO.user.request.UserLoginRequest;
 import com.example.learnhub.DTO.user.request.UserRegisterRequest;
+import com.example.learnhub.DTO.user.request.UserResetPasswordRequest;
 import com.example.learnhub.DTO.user.request.UserVerifyOTPRequest;
+import com.example.learnhub.DTO.user.response.CommonStatusResponse;
 import com.example.learnhub.DTO.user.response.UserLoginResponse;
 import com.example.learnhub.DTO.user.response.UserResponse;
 import com.example.learnhub.Entity.Role;
@@ -138,7 +140,8 @@ public class UserV1Controller {
             if (!AESUtils.decrypt(user.getUserPassword(), key).equals(request.getPassword())) {
                 throw new UnauthorizeException(ErrorMessage.USER_AUTHORIZATION_FAILED);
             }
-            UserDetailsImpl userDetails = UserDetailsImpl.build(user);
+            Role role = roleRepository.findById(user.getRoleId()).orElse(null);
+            UserDetailsImpl userDetails = UserDetailsImpl.build(user, role.getRoleName());
             String accessToken = JWTUtils.generateAccessToken(userDetails, user);
             String refreshToken = JWTUtils.generateRefreshToken(userDetails);
             UserLoginResponse response = new UserLoginResponse()
@@ -158,4 +161,38 @@ public class UserV1Controller {
     //TODO: UpdateUser
     //TODO: Forgot pass
     //TODO: Check forgot pass
+    //TODO: Reset password
+    @PostMapping("/v1/resetPassword")
+    ResponseEntity<ApiResponse<CommonStatusResponse>> resetPassword(@RequestBody UserResetPasswordRequest request) {
+        try {
+            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+            if (Objects.isNull(user)) {
+                throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
+            }
+            String newPassword = user.getEmail().split("@")[0] + "123#";
+            user.setUserPassword(AESUtils.encrypt(newPassword,key));
+            user = userRepository.save(user);
+            log.info("Reset password success");
+            // send email:
+            log.info("START... Sending email to {}", user.getEmail());
+            Mail mail = new Mail();
+            mail.setFrom(mailFrom);//replace with your desired email
+            mail.setTo(user.getEmail());//replace with your desired email
+            mail.setSubject("Email Reset Password!");
+            Map<String, Object> model = new HashMap<>();
+            model.put("new_password", newPassword);
+            mail.setPros(model);
+            mail.setTemplate("resetPassword");
+            emailSenderService.sendEmail(mail);
+            log.info("END... Email sent success");
+            ApiResponse<CommonStatusResponse> responseBody = new ApiResponse<>().ok(new CommonStatusResponse(true));
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("Error: {}", e.getLocalizedMessage());
+            throw new BusinessException(ErrorMessage.USER_RESET_PASSWORD_FAIL);
+        }
+    }
 }
