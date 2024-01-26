@@ -2,6 +2,7 @@ package com.example.learnhub.security.config;
 
 
 import com.example.learnhub.security.CustomAuthorizationFilter;
+import com.example.learnhub.security.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,6 +27,9 @@ public class SecurityConfig {
             .authorizeHttpRequests((authz) -> authz
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 //                .anyRequest().authenticated()
+                    .requestMatchers(
+                        "/api/user/v1/resetPassword"
+                    ).hasRole(Role.ADMIN.name())
                     .anyRequest().permitAll()
             )
             .addFilterBefore(new CustomAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)

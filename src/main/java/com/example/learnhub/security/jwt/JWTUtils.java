@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.example.learnhub.Entity.User;
 import com.example.learnhub.security.UserDetailsImpl;
+import org.apache.groovy.parser.antlr4.GroovyLexer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +39,7 @@ public class JWTUtils {
             .withClaim("id", userDetails.getId())
             .withClaim("email", user.getEmail())
             .withClaim("name", user.getFullName())
+            .withClaim("role", userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
             .sign(algorithm);
     }
 
