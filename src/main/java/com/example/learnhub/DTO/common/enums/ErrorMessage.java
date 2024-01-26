@@ -21,7 +21,9 @@ public enum ErrorMessage {
     USER_AUTHORIZATION_FAILED("User authorization fail"),
     USER_PERMISSION_NOT_FOUND("User permission not found"),
     USER_EMAIL_NOT_MATCH("User email not match"),
-    USER_RESET_PASSWORD_FAIL("User reset password fail")
+    USER_RESET_PASSWORD_FAIL("User reset password fail"),
+    USER_OTP_NOT_MATCH("User OTP not match"),
+    USER_ROLE_NOT_FOUND("User role not found")
 
 
     ;
