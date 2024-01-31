@@ -20,6 +20,7 @@ import com.example.learnhub.security.UserDetailsImpl;
 import com.example.learnhub.security.jwt.JWTUtils;
 import com.example.learnhub.security.utils.AESUtils;
 import com.example.learnhub.security.utils.RandomStringGenerator;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +95,7 @@ public class UserV1Controller {
             mail.setTemplate("index");
             emailSenderService.sendEmail(mail);
             log.info("END... Email sent success");
-            ApiResponse<UserResponse> response = new ApiResponse<>().ok(new UserResponse(user,roles.get(0)));
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,roles.get(0)));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -127,7 +128,7 @@ public class UserV1Controller {
             user.setStringRandom("");
             user = userRepository.save(user);
             Role role = roleRepository.findById(user.getRoleId()).orElse(null);
-            ApiResponse<UserResponse> response = new ApiResponse<>().ok(new UserResponse(user,role));
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,role));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -141,21 +142,7 @@ public class UserV1Controller {
     @PostMapping("/v1/login")
     public ResponseEntity<ApiResponse<UserLoginResponse>> login(@RequestBody UserLoginRequest request){
         try {
-            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-            if (Objects.isNull(user)) {
-                throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
-            }
-            if (!AESUtils.decrypt(user.getUserPassword(), key).equals(request.getPassword())) {
-                throw new UnauthorizeException(ErrorMessage.USER_AUTHORIZATION_FAILED);
-            }
-            Role role = roleRepository.findById(user.getRoleId()).orElse(null);
-            UserDetailsImpl userDetails = UserDetailsImpl.build(user, role.getRoleName());
-            String accessToken = JWTUtils.generateAccessToken(userDetails, user);
-            String refreshToken = JWTUtils.generateRefreshToken(userDetails);
-            UserLoginResponse response = new UserLoginResponse()
-                .setAccessToken(accessToken)
-                .setRefreshToken(refreshToken);
-            ApiResponse<UserLoginResponse> responseBody = new ApiResponse<>().ok(response);
+            ApiResponse<UserLoginResponse> responseBody = loginUserRole(request.getEmail(), request.getPassword(),null);
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -214,7 +201,7 @@ public class UserV1Controller {
             }
             Role role = roleRepository.findById(userUpdate.getRoleId()).orElse(null);
             userUpdate = userRepository.save(userUpdate);
-            ApiResponse<UserResponse> responseBody = new ApiResponse<>().ok(new UserResponse(userUpdate,role));
+            ApiResponse<UserResponse> responseBody = new ApiResponse<UserResponse>().ok(new UserResponse(userUpdate,role));
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -250,7 +237,7 @@ public class UserV1Controller {
             mail.setTemplate("index");
             emailSenderService.sendEmail(mail);
             log.info("END... Email sent success");
-            ApiResponse<CommonStatusResponse> responseBody = new ApiResponse<>().ok(new CommonStatusResponse(true));
+            ApiResponse<CommonStatusResponse> responseBody = new ApiResponse<CommonStatusResponse>().ok(new CommonStatusResponse(true));
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -279,7 +266,7 @@ public class UserV1Controller {
             user.setStringRandom("");
             user.setUserPassword(AESUtils.encrypt(request.getNewPassword(),key));
             user = userRepository.save(user);
-            ApiResponse<CommonStatusResponse> response = new ApiResponse<>().ok(new CommonStatusResponse(true));
+            ApiResponse<CommonStatusResponse> response = new ApiResponse<CommonStatusResponse>().ok(new CommonStatusResponse(true));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -314,7 +301,7 @@ public class UserV1Controller {
             mail.setTemplate("resetPassword");
             emailSenderService.sendEmail(mail);
             log.info("END... Email sent success");
-            ApiResponse<CommonStatusResponse> responseBody = new ApiResponse<>().ok(new CommonStatusResponse(true));
+            ApiResponse<CommonStatusResponse> responseBody = new ApiResponse<CommonStatusResponse>().ok(new CommonStatusResponse(true));
             return new ResponseEntity<>(responseBody, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -332,7 +319,7 @@ public class UserV1Controller {
         try {
             User user = userRepository.findByEmail(principal.getName()).orElse(null);
             Role role = roleRepository.findById(user.getRoleId()).orElse(null);
-            ApiResponse<UserResponse> response = new ApiResponse<>().ok(new UserResponse(user,role));
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,role));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -348,7 +335,7 @@ public class UserV1Controller {
     ResponseEntity<ApiResponse<List<UserInfoResponse>>> listUser(){
         try {
             List<User> userList = userRepository.findAll();
-            ApiResponse<List<UserInfoResponse>> response = new ApiResponse<>().ok(userList.stream().map(UserInfoResponse::new).collect(Collectors.toList()));
+            ApiResponse<List<UserInfoResponse>> response = new ApiResponse<List<UserInfoResponse>>().ok(userList.stream().map(UserInfoResponse::new).collect(Collectors.toList()));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -368,7 +355,7 @@ public class UserV1Controller {
                 throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
             }
             Role role = roleRepository.findById(user.getRoleId()).orElse(null);
-            ApiResponse<UserResponse> response = new ApiResponse<>().ok(new UserResponse(user,role));
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,role));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
@@ -378,5 +365,85 @@ public class UserV1Controller {
         }
     }
 
+
+    @SneakyThrows
+    private ApiResponse<UserLoginResponse> loginUserRole(String email, String password, Role roleExpect) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (Objects.isNull(user)) {
+            throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
+        }
+        if (!AESUtils.decrypt(user.getUserPassword(), key).equals(password)) {
+            throw new UnauthorizeException(ErrorMessage.USER_AUTHORIZATION_FAILED);
+        }
+        Role role = roleRepository.findById(user.getRoleId()).orElse(null);
+        if(Objects.nonNull(roleExpect)) {
+            if(Objects.isNull(role) || !roleExpect.getRoleName().equals(role.getRoleName())) {
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+        }
+        UserDetailsImpl userDetails = UserDetailsImpl.build(user, role.getRoleName());
+        String accessToken = JWTUtils.generateAccessToken(userDetails, user);
+        String refreshToken = JWTUtils.generateRefreshToken(userDetails);
+        UserLoginResponse response = new UserLoginResponse()
+            .setAccessToken(accessToken)
+            .setRefreshToken(refreshToken);
+        return new ApiResponse<UserLoginResponse>().ok(response);
+    }
+
+    @PostMapping("/v1/admin/login")
+    ResponseEntity<ApiResponse<UserLoginResponse>> adminLogin(@Validated @RequestBody UserAdminLoginRequest request) {
+        try {
+            List<Role> role = roleRepository.findByRoleName(com.example.learnhub.security.Role.ADMIN.name());
+            if(role.isEmpty()){
+                throw new BusinessException(ErrorMessage.USER_ROLE_NOT_FOUND);
+            }
+            ApiResponse<UserLoginResponse> responseBody = loginUserRole(request.getEmail(),request.getPassword(),role.get(0));
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("Error: {}", e.getLocalizedMessage());
+            throw new BusinessException(ErrorMessage.USER_LOGIN_FAIL);
+        }
+    }
+
+
+    @PostMapping("/v1/coursemanager/login")
+    ResponseEntity<ApiResponse<UserLoginResponse>> courseManagerLogin(@Validated @RequestBody UserCourseManagerLoginRequest request) {
+        try {
+            List<Role> role = roleRepository.findByRoleName(com.example.learnhub.security.Role.COURSEMANAGER.name());
+            if(role.isEmpty()){
+                throw new BusinessException(ErrorMessage.USER_ROLE_NOT_FOUND);
+            }
+            ApiResponse<UserLoginResponse> responseBody = loginUserRole(request.getEmail(),request.getPassword(),role.get(0));
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("Error: {}", e.getLocalizedMessage());
+            throw new BusinessException(ErrorMessage.USER_LOGIN_FAIL);
+        }
+    }
+
+
+    @PostMapping("/v1/student/login")
+    ResponseEntity<ApiResponse<UserLoginResponse>> studentLogin(@Validated @RequestBody UserStudentLoginRequest request) {
+        try {
+            List<Role> role = roleRepository.findByRoleName(com.example.learnhub.security.Role.STUDENT.name());
+            if(role.isEmpty()){
+                throw new BusinessException(ErrorMessage.USER_ROLE_NOT_FOUND);
+            }
+            ApiResponse<UserLoginResponse> responseBody = loginUserRole(request.getEmail(),request.getPassword(),role.get(0));
+            return new ResponseEntity<>(responseBody, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e){
+            e.printStackTrace();
+            log.error("Error: {}", e.getLocalizedMessage());
+            throw new BusinessException(ErrorMessage.USER_LOGIN_FAIL);
+        }
+    }
 
 }
