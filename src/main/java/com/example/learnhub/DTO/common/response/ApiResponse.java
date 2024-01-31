@@ -20,7 +20,7 @@ public class ApiResponse<T> {
         this.status = StatusEnum.SUCCESS;
     }
 
-    public ApiResponse ok(T data) {
+    public ApiResponse<T> ok(T data) {
         this.status = StatusEnum.SUCCESS;
         this.payload = data;
         return this;
