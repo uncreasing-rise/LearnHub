@@ -46,6 +46,8 @@ public class User {
 
     private String stringRandom;
 
+    private Boolean deleted = Boolean.FALSE;
+
     @ManyToMany
     @JoinTable(
             name = "User_Course",

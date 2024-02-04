@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum ErrorMessage {
     USER_ADMIN_INVALID("User Super Admin Invalid"),
     USER_EMAIL_EXISTED("Email existed"),
+    USER_EMAIL_INVALID("Email invalid"),
     USER_EMAIL_FORMAT_INCORRECT("Email incorrect format"),
     USER_CREATE_FAIL("Create user fail"),
     USER_UPDATE_FAIL("Create user fail"),
@@ -23,7 +24,10 @@ public enum ErrorMessage {
     USER_EMAIL_NOT_MATCH("User email not match"),
     USER_RESET_PASSWORD_FAIL("User reset password fail"),
     USER_OTP_NOT_MATCH("User OTP not match"),
-    USER_ROLE_NOT_FOUND("User role not found")
+    USER_ROLE_NOT_FOUND("User role not found"),
+    USER_DISABLED("User disabled"),
+    USER_RESTORE_FAILED("User restore failed"),
+    USER_DISABLED_FAILED("User disable failed")
 
 
     ;
