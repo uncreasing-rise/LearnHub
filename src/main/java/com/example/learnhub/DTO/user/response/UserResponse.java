@@ -18,6 +18,7 @@ public class UserResponse {
     private String image;
     private String role;
     private Boolean enable;
+    private Boolean deleted;
 
     public UserResponse(User user, Role role) {
         this.id = user.getUserId();
@@ -27,5 +28,6 @@ public class UserResponse {
         this.image = user.getImage();
         this.role = role == null ? null : role.getRoleName();
         this.enable = user.getEnable();
+        this.deleted = user.getDeleted();
     }
 }

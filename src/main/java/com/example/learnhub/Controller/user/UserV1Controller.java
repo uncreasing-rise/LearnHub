@@ -64,9 +64,20 @@ public class UserV1Controller {
     ResponseEntity<ApiResponse<UserResponse>> registerUser(@RequestBody UserRegisterRequest request){
 
         try {
-            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-            if(Objects.nonNull(user) && user.getEnable().equals(Boolean.TRUE)){
+
+            if(!userRepository.findByEmailAndDeleted(request.getEmail(), true).isEmpty()){
+                throw new BusinessException(ErrorMessage.USER_EMAIL_INVALID);
+            }
+
+            User user = getUserAvailable(request.getEmail(),  true);
+
+            if(Objects.nonNull(user)){
                 throw new BusinessException(ErrorMessage.USER_EMAIL_EXISTED);
+            }
+
+
+            if(Boolean.TRUE.equals(user.getEnable())) {
+                throw new BusinessException(ErrorMessage.USER_ENABLED);
             }
 
             List<Role> roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.STUDENT.name());
@@ -80,6 +91,7 @@ public class UserV1Controller {
                 .setEnable(Boolean.FALSE)
                 .setImage("url")
                 .setToken("token")
+                .setDeleted(false)
                 .setStringRandom(randomString);
             user = userRepository.save(user);
 
@@ -110,11 +122,7 @@ public class UserV1Controller {
     @PostMapping("/v1/verify")
     ResponseEntity<ApiResponse<UserResponse>> verify(@RequestBody UserVerifyOTPRequest request){
         try {
-            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-
-            if(Objects.isNull(user)){
-                throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
-            }
+            User user = getUserAvailable(request.getEmail(), false);
 
             if(!request.getOtp().equals(user.getStringRandom())){
                 throw new BusinessException(ErrorMessage.USER_OTP_NOT_MATCH);
@@ -157,7 +165,8 @@ public class UserV1Controller {
     @PutMapping("/v1/{id}")
     ResponseEntity<ApiResponse<UserResponse>> updateUser(Principal principal,  @PathVariable(name = "id") String id, @RequestBody UserUpdateRequest request){
         try {
-            User userRequest = userRepository.findByEmail(principal.getName()).orElse(null);
+
+            User userRequest = getUserAvailable(principal.getName(),true);
             if(Objects.isNull(userRequest)){
                 throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
             }
@@ -166,7 +175,6 @@ public class UserV1Controller {
             if(Objects.isNull(userUpdate)){
                 throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
             }
-
 
             if(!Objects.equals(userRequest.getUserId(), userUpdate.getUserId())) {
                 Role role = roleRepository.findById(userRequest.getRoleId()).orElse(null);
@@ -218,10 +226,7 @@ public class UserV1Controller {
     @PostMapping("/v1/forgetPassword")
     ResponseEntity<ApiResponse<CommonStatusResponse>> forgetPasswordRequest(@Validated @RequestBody ForgetPassRequest request){
         try {
-            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-            if (Objects.isNull(user)) {
-                throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
-            }
+            User user = getUserAvailable(request.getEmail(),false);
             String randomString = RandomStringGenerator.generateRandomString(6);
             user.setStringRandom(randomString);
             user = userRepository.save(user);
@@ -253,11 +258,7 @@ public class UserV1Controller {
     @PostMapping("/v1/verifyForgetPassword")
     ResponseEntity<ApiResponse<CommonStatusResponse>> verifyForgetPassword(@Validated @RequestBody VerifyForgetPasswordRequest  request){
         try {
-            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-
-            if(Objects.isNull(user)){
-                throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
-            }
+            User user = getUserAvailable(request.getEmail(), false);
 
             if(!request.getOtp().equals(user.getStringRandom())){
                 throw new BusinessException(ErrorMessage.USER_OTP_NOT_MATCH);
@@ -281,10 +282,7 @@ public class UserV1Controller {
     @PostMapping("/v1/resetPassword")
     ResponseEntity<ApiResponse<CommonStatusResponse>> resetPassword(@RequestBody UserResetPasswordRequest request) {
         try {
-            User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-            if (Objects.isNull(user)) {
-                throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
-            }
+            User user = getUserAvailable(request.getEmail(), false);
             String newPassword = user.getEmail().split("@")[0] + "123#";
             user.setUserPassword(AESUtils.encrypt(newPassword,key));
             user = userRepository.save(user);
@@ -317,7 +315,7 @@ public class UserV1Controller {
     @GetMapping("/v1/info")
     ResponseEntity<ApiResponse<UserResponse>> getInfoUser(Principal principal){
         try {
-            User user = userRepository.findByEmail(principal.getName()).orElse(null);
+            User user = getUserAvailable(principal.getName(), false);
             Role role = roleRepository.findById(user.getRoleId()).orElse(null);
             ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,role));
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -334,7 +332,7 @@ public class UserV1Controller {
     @GetMapping("/v1/list")
     ResponseEntity<ApiResponse<List<UserInfoResponse>>> listUser(){
         try {
-            List<User> userList = userRepository.findAll();
+            List<User> userList = userRepository.findAllByDeleted(false);
             ApiResponse<List<UserInfoResponse>> response = new ApiResponse<List<UserInfoResponse>>().ok(userList.stream().map(UserInfoResponse::new).collect(Collectors.toList()));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (BusinessException e) {
@@ -368,9 +366,9 @@ public class UserV1Controller {
 
     @SneakyThrows
     private ApiResponse<UserLoginResponse> loginUserRole(String email, String password, Role roleExpect) {
-        User user = userRepository.findByEmail(email).orElse(null);
-        if (Objects.isNull(user)) {
-            throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
+        User user = getUserAvailable(email,false);
+        if(!user.getEnable()){
+            throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
         }
         if (!AESUtils.decrypt(user.getUserPassword(), key).equals(password)) {
             throw new UnauthorizeException(ErrorMessage.USER_AUTHORIZATION_FAILED);
@@ -444,6 +442,90 @@ public class UserV1Controller {
             log.error("Error: {}", e.getLocalizedMessage());
             throw new BusinessException(ErrorMessage.USER_LOGIN_FAIL);
         }
+    }
+
+    @DeleteMapping("/v1/{id}")
+    ResponseEntity<ApiResponse<UserResponse>> deleteUser(Principal principal, @PathVariable(name = "id")String id){
+        try {
+
+            User userRequest = getUserAvailable(principal.getName(), true);
+            if(Objects.isNull(userRequest)){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            Role role = roleRepository.findById(userRequest.getRoleId()).orElse(null);
+            if(Objects.isNull(role) || !role.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+
+            User user = userRepository.findByUserId(Integer.valueOf(id)).orElse(null);
+            if(Objects.isNull(user)){
+                throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
+            }
+
+            user.setDeleted(true);
+            user = userRepository.save(user);
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,roleRepository.findById(user.getRoleId()).orElse(null)));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error: {}", e.getLocalizedMessage());
+            throw new BusinessException(ErrorMessage.USER_DISABLED_FAILED);
+        }
+    }
+
+
+    @PostMapping("/v1/restore/{id}")
+    ResponseEntity<ApiResponse<UserResponse>> restoreUser(Principal principal, @PathVariable(name = "id")String id){
+        try {
+
+            User userRequest = getUserAvailable(principal.getName(), true);
+            if(Objects.isNull(userRequest)){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            Role role = roleRepository.findById(userRequest.getRoleId()).orElse(null);
+            if(Objects.isNull(role) || !role.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+
+            User user = userRepository.findByUserId(Integer.valueOf(id)).orElse(null);
+            if(Objects.isNull(user)){
+                throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
+            }
+
+            user.setDeleted(false);
+            user = userRepository.save(user);
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,roleRepository.findById(user.getRoleId()).orElse(null)));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error: {}", e.getLocalizedMessage());
+            throw new BusinessException(ErrorMessage.USER_RESTORE_FAILED);
+        }
+    }
+
+
+    private User getUserAvailable(String email, boolean nullable) {
+        List<User> userList = userRepository.findByEmailAndDeleted(email, false);
+        if(userList.isEmpty()){
+            userList = userRepository.findByEmailAndDeleted(email,null);
+            for (User user : userList){
+                user.setDeleted(false);
+            }
+            userRepository.saveAll(userList);
+        }
+        if (userList.isEmpty()) {
+            if(nullable){
+                return  null;
+            }
+            throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
+        }
+        return userList.get(0);
     }
 
 }
