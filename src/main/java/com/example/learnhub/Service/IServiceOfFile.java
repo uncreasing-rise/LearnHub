@@ -6,11 +6,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
-public interface InterfaceOfFileService {
+public interface IServiceOfFile {
 
     List<String> listOfFiles();
     ByteArrayResource downloadFile(String fileName);
     boolean deleteFile(String fileName);
-    String uploadFile(MultipartFile file) throws IOException;
+    void uploadFile(MultipartFile file) throws IOException;
 }
-

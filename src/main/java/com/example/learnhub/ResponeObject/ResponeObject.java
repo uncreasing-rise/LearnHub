@@ -7,9 +7,9 @@ public class ResponeObject {
 
      private Object data;
 
-     public ResponeObject(){};
+     public ResponeObject(){}
 
-     public ResponeObject(String status, String message, Object data)
+    public ResponeObject(String status, String message, Object data)
      {
          this.status = status;
          this.message = message;

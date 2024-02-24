@@ -9,6 +9,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.Base64;
@@ -35,7 +36,7 @@ public class AESUtils {
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivParameterSpec);
 
         // Encrypt the data
-        byte[] encryptedData = cipher.doFinal(data.getBytes("UTF-8"));
+        byte[] encryptedData = cipher.doFinal(data.getBytes(StandardCharsets.UTF_8));
 
         // Combine the IV and encrypted data, then encode to Base64
         byte[] combined = new byte[iv.length + encryptedData.length];
@@ -72,6 +73,6 @@ public class AESUtils {
         // Decrypt the data
         byte[] decryptedData = cipher.doFinal(encryptedBytes);
 
-        return new String(decryptedData, "UTF-8");
+        return new String(decryptedData, StandardCharsets.UTF_8);
     }
 }

@@ -22,10 +22,10 @@ public enum Role implements GrantedAuthority {
         return authority;
     }
 
-    public class Code {
-        public static final String ADMIN = "ROLE_ADMIN";
-        public static final String COURSEMANAGER = "ROLE_COURSEMANAGER";
-        public static final String STUDENT = "ROLE_STUDENT";
+    public static class Code {
+        public static final String ADMIN = "Admin";
+        public static final String COURSEMANAGER = "CourseManager";
+        public static final String STUDENT = "Student";
     }
 
 

@@ -45,16 +45,16 @@ public interface InterfaceOfCourseController {
 
 
     @GetMapping("/getCourseSort1")
-    public List<CourseDTO> getCoursesByPriceHigher();
+    List<CourseDTO> getCoursesByPriceHigher();
 
     @GetMapping("/getCourseSort2")
-    public List<CourseDTO> getCoursesByPriceLower();
+    List<CourseDTO> getCoursesByPriceLower();
 
     @GetMapping("/getCourseSort3")
-    public List<CourseDTO> getCoursesByDateNew();
+    List<CourseDTO> getCoursesByDateNew();
 
     @GetMapping("/getCourseSort4")
-    public List<CourseDTO> getCoursesByDateOld();
+    List<CourseDTO> getCoursesByDateOld();
 
     @GetMapping("/{id}")
     ResponseEntity<CourseDTO> getCourseById(@PathVariable int id);

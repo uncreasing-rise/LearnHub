@@ -59,8 +59,6 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     @Query("SELECT c FROM Course c WHERE c.categoryId = :categoryId")
     List<Course> findByCategory(@Param("categoryId") String categoryId);
 
-    ;
-
     @Query("SELECT c FROM Course c WHERE c.status <> 2")
     List<Course> findUnapprovedCourses();
 

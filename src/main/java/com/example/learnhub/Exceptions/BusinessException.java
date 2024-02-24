@@ -4,7 +4,7 @@ import com.example.learnhub.DTO.common.enums.ErrorMessage;
 
 public class BusinessException extends RuntimeException {
 
-    private String message;
+    private final String message;
 
 
     private BusinessException(String message) {

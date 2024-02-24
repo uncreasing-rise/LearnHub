@@ -1,7 +1,7 @@
 package com.example.learnhub.Controller;
 
 
- import com.example.learnhub.DTO.UserDTO;
+
  import com.example.learnhub.DTO.user.request.UserLoginRequest;
  import com.example.learnhub.DTO.user.response.UserLoginResponse;
  import com.example.learnhub.Exceptions.AppServiceExeption;
@@ -9,6 +9,7 @@ import com.example.learnhub.MailConfig.MailDetail;
 import com.example.learnhub.Entity.User;
 import com.example.learnhub.Repository.UserRepository;
 import com.example.learnhub.MailConfig.MailService;
+ import com.example.learnhub.config.CloudinaryConfig;
  import com.example.learnhub.security.UserDetailsImpl;
  import com.example.learnhub.security.jwt.JWTUtils;
  import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
- import java.util.Objects;
- import java.util.Optional;
+ import java.util.*;
 
 @RestController
 @RequestMapping ("/api/v1/users")
@@ -31,6 +30,8 @@ public class UserController {
     @Autowired
     private MailService mailService;
 
+    @Autowired
+    CloudinaryConfig cloudinaryConfig;
     @PostMapping("/register")
     public ResponseEntity<Object> createAccount(@RequestBody User user) {
         try {

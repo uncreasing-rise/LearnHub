@@ -11,18 +11,15 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @Slf4j
 public class RoleConfig {
+
 
     @Autowired
     private RoleRepository roleRepository;
@@ -36,24 +33,22 @@ public class RoleConfig {
     @PostConstruct
     @SneakyThrows
     public void config() {
+        try {
+            log.info("Go to config");
+            createRoleIfNotExists(com.example.learnhub.security.Role.STUDENT.name());
+            createRoleIfNotExists(com.example.learnhub.security.Role.COURSEMANAGER.name());
+            createRoleIfNotExists(com.example.learnhub.security.Role.ADMIN.name());
+        } catch (Exception e) {
+            log.error("Error during RoleConfig initialization", e);
+        }
+    }
 
-            log.info("Goto config");
-            List<Role> roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.STUDENT.name());
-            if (roles.size() == 0) {
-                Role role = new Role(com.example.learnhub.security.Role.STUDENT.name());
-                roleRepository.save(role);
-            }
-            roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.COURSEMANAGER.name());
-            if (roles.size() == 0) {
-                Role role = new Role(com.example.learnhub.security.Role.COURSEMANAGER.name());
-                roleRepository.save(role);
-            }
-            roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.ADMIN.name());
-            if (roles.size() == 0) {
-                Role role = new Role(com.example.learnhub.security.Role.ADMIN.name());
-                roleRepository.save(role);
-            }
-
+    private void createRoleIfNotExists(String roleName) throws Exception {
+        List<Role> roles = roleRepository.findByRoleName(roleName);
+        if (roles.isEmpty()) {
+            Role role = new Role(roleName);
+            roleRepository.save(role);
+        }
         User user = userRepository.findByEmail("Admin@email.com").orElse(
             new User()
             .setEnable(true)
@@ -67,6 +62,4 @@ public class RoleConfig {
         userRepository.save(user);
 
     }
-
-
 }

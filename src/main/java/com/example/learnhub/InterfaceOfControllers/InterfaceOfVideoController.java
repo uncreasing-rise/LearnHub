@@ -13,14 +13,14 @@ import java.util.List;
 public interface InterfaceOfVideoController {
 
     @PostMapping("/add")
-    public VideoDTO createNewVideo(String name, MultipartFile data, String script, boolean isTrial, Section section  ) throws IOException;
+    VideoDTO createNewVideo(String name, MultipartFile data, String script, boolean isTrial, Section section) throws IOException;
 
-    public List<VideoDTO> findAllVideoBySectionID();
+    List<VideoDTO> findAllVideoBySectionID();
 
-    public VideoDTO findVideoByID();
+    VideoDTO findVideoByID();
 
-    public List<VideoDTO> findAllVideos();
+    List<VideoDTO> findAllVideos();
 
     @PostMapping("/delete")
-    public int deleteVideo(int id);
+    int deleteVideo(int id);
 }

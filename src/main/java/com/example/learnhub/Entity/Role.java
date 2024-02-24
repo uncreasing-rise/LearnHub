@@ -19,13 +19,6 @@ public class Role {
     @Column(name = "RoleName")
     private String roleName;
 
-
-    public Role(Integer id, String name ) {
-        this.roleId = id;
-        this.roleName = name;
-    }
-
-
     public Role(String name ) {
         this.roleName = name;
     }
