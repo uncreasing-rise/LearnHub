@@ -9,7 +9,10 @@ import java.util.List;
 public interface IServiceOfFile {
 
     List<String> listOfFiles();
+
     ByteArrayResource downloadFile(String fileName);
+
     boolean deleteFile(String fileName);
+
     void uploadFile(MultipartFile file) throws IOException;
 }

@@ -64,7 +64,7 @@ public class ServiceOfCourse {
 
             Section savedSection = sectionRepository.save(section);
 
-            serviceOfSection.createVideos(savedSection, sectionDTO.getVideos());
+            serviceOfSection.createVideos(savedSection, sectionDTO.getVideoFiles());
             serviceOfSection.createArticles(savedSection, sectionDTO.getArticles());
         }
     }
@@ -225,7 +225,7 @@ public class ServiceOfCourse {
         SectionDTO sectionDTO = new SectionDTO();
         sectionDTO.setSectionId(section.getSectionId());
         sectionDTO.setSectionName(section.getSectionName());
-        sectionDTO.setCourseID(section.getCourse().getCourseId());
+        sectionDTO.setCourseId(section.getCourse().getCourseId());
         return sectionDTO;
     }
 

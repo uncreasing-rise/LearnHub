@@ -20,6 +20,7 @@ public class ServiceOfFile implements IServiceOfFile {
     @Value("${gcp.bucket.name}")
     private String bucketName;
 
+    @Autowired
     Storage storage;
 
     @Override

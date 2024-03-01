@@ -1,11 +1,11 @@
 package com.example.learnhub.Service;
 
 import com.example.learnhub.DTO.ArticleDTO;
-import com.example.learnhub.DTO.VideoDTO;
 import com.example.learnhub.Entity.Section;
 import com.example.learnhub.Repository.SectionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,14 +31,13 @@ public class ServiceOfSection {
         return sectionRepository.findAll();
     }
 
-    public Section createVideos(Section section, List<VideoDTO> videoDTOs) {
+    public void createVideos(Section section, List<MultipartFile> videoFiles) {
         Section savedSection = sectionRepository.save(section);
 
-        if (videoDTOs != null) {
-            serviceOfVideo.createVideos(savedSection, videoDTOs);
+        if (videoFiles != null) {
+            serviceOfVideo.createVideos(savedSection, videoFiles);
         }
 
-        return savedSection;
     }
 
     public void createArticles(Section section, List<ArticleDTO> articleDTOs) {
