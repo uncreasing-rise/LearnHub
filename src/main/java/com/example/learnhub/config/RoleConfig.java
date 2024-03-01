@@ -1,4 +1,4 @@
-package com.example.learnhub.Controller.user;
+package com.example.learnhub.config;
 
 
 import com.example.learnhub.Entity.Role;
