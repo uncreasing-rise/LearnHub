@@ -1,4 +1,4 @@
-package com.example.learnhub.Controller.user;
+package com.example.learnhub.Controller;
 
 
 import com.example.learnhub.DTO.common.enums.ErrorMessage;
