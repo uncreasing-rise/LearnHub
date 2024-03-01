@@ -4,24 +4,21 @@ package com.example.learnhub.Controller;
 
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 //import java.util.*;
 
 
 import com.example.learnhub.DTO.PaymentResDTO;
 import com.example.learnhub.DTO.TransactionStatusDTO;
+import com.example.learnhub.Entity.Payment;
+import com.example.learnhub.Service.ServiceOfPayment;
 import com.example.learnhub.onlinePay.Config.Config;
 import jakarta.websocket.server.PathParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,12 +31,14 @@ import static java.lang.System.out;
 @RestController
 public class PaymentController {
 
-    @GetMapping("/pay")
-    public String getPay() throws UnsupportedEncodingException{ //@PathParam("price") long Price, @PathParam("id") Integer contractId
+    @GetMapping("/pay") // /{price}/{id}
+    public String getPay() throws UnsupportedEncodingException{ //@PathParam("price") Long price, @PathParam("id") Integer contractId
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
+//        long amount = (price != null) ? price : 0; // Nếu price không null, sử dụng giá trị của nó, ngược lại sử dụng 0
+//        amount *= 100; // Chuyển đổi sang đơn vị tiền tệ
         long amount = 100000 * 100;
         String bankCode = "NCB";
 
@@ -61,7 +60,7 @@ public class PaymentController {
         vnp_Params.put("vnp_OrderType", orderType);
 
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", Config.vnp_ReturnUrl); // + "?contractId=" + contractId
+        vnp_Params.put("vnp_ReturnUrl", Config.vnp_ReturnUrl ); // + "?contractId=" + contractId
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
        // vnp_Params.put("vnp_ApiUrl", Config.vnp_ApiUrl);
 
@@ -102,33 +101,49 @@ public class PaymentController {
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
         String paymentUrl = Config.vnp_PayUrl + "?" + queryUrl;
 
-        PaymentResDTO paymentResDTO = new PaymentResDTO();
-        paymentResDTO.setStatus("OK");
-        paymentResDTO.setMessage("Successfully");
-        paymentResDTO.setURL(paymentUrl);
+//        PaymentResDTO paymentResDTO = new PaymentResDTO();
+//        paymentResDTO.setStatus("OK");
+//        paymentResDTO.setMessage("Successfully");
+//        paymentResDTO.setURL(paymentUrl);
         //return ResponseEntity.status(HttpStatus.OK).body(paymentResDTO);
 
         return paymentUrl;
     }
 
+    private final ServiceOfPayment serviceOfPayment;
+
+    @Autowired
+    public PaymentController(ServiceOfPayment serviceOfPayment) {
+        this.serviceOfPayment = serviceOfPayment;
+    }
+
     @GetMapping("/pay_infor")
-    public ResponseEntity<?> transaction(
+    public ResponseEntity<?> transactionStatusDTO(
             @RequestParam(value = "vnp_Amount") String amount,
             @RequestParam(value = "vnp_BankCode") String bankCode,
             @RequestParam(value = "vnp_OrderInfo") String order,
             @RequestParam(value = "vnp_ResponseCode") String responseCode
-    ){
+    ) {
         TransactionStatusDTO transactionStatusDTO = new TransactionStatusDTO();
-       if(responseCode.equals("00")) {
-           transactionStatusDTO.setStatus("Ok");
-           transactionStatusDTO.setMessage("Successfully");
-           transactionStatusDTO.setData("Amount: " + amount + ", Bank Code: " + bankCode);
+        if (responseCode.equals("00")) {
+            transactionStatusDTO.setStatus("Ok");
+            transactionStatusDTO.setMessage("Successfully");
+            transactionStatusDTO.setData("Amount: " + amount + ", Bank Code: " + bankCode + ", Order: " + order);
 
-       } else {
-           transactionStatusDTO.setStatus("Failed");
-           transactionStatusDTO.setMessage("Payment Failed");
-           transactionStatusDTO.setData("Error Code: " + responseCode);
-       }
+            // Create Payment entity and save it
+            Payment payment = new Payment();
+            payment.setPaymentAmount(new BigDecimal(amount));
+            payment.setPaymentTime(new Date());
+            payment.setPaymentStatus("Success"); // Assuming it's successful by default
+            payment.setBankCode(bankCode);
+            // You can set other fields as needed
+
+            serviceOfPayment.savePayment(payment); // Save payment
+        } else {
+            transactionStatusDTO.setStatus("Failed");
+            transactionStatusDTO.setMessage("Payment Failed");
+            transactionStatusDTO.setData("Error Code: " + responseCode);
+        }
 
         Map<String, String> response = new HashMap<>();
         response.put("status", transactionStatusDTO.getStatus());

@@ -50,15 +50,15 @@ public class RoleConfig {
             roleRepository.save(role);
         }
         User user = userRepository.findByEmail("Admin@email.com").orElse(
-            new User()
-            .setEnable(true)
-            .setEmail("Admin@email.com")
-                .setFacebook("facebook")
-                .setToken("token")
-                .setImage("url")
-                .setFullName("fullname")
-            .setRoleId(roleRepository.findByRoleName(com.example.learnhub.security.Role.ADMIN.name()).get(0).getRoleId())
-            .setUserPassword(AESUtils.encrypt("Password123@", key)));
+                new User()
+                        .setEnable(true)
+                        .setEmail("Admin@email.com")
+                        .setFacebook("facebook")
+                        .setToken("token")
+                        .setImage("url")
+                        .setFullName("fullname")
+                        .setRoleId(roleRepository.findByRoleName(com.example.learnhub.security.Role.ADMIN.name()).get(0).getRoleId())
+                        .setUserPassword(AESUtils.encrypt("Password123@", key)));
         userRepository.save(user);
 
     }

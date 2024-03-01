@@ -24,11 +24,48 @@ public class Payment {
     @Column(name = "PaymentStatus")
     private String paymentStatus;
 
-    @Column(name = "PaymentType")
-    private String paymentType;
+    @Column(name = "BankCode")
+    private String bankCode;
+
+    @Column(name = "OrderDetail")
+    private String orderDetail;
+
+
+
 
     @ManyToOne
     @JoinColumn(name = "UserID")
     private User user;
 
+    public void setPaymentAmount(BigDecimal paymentAmount) {
+        this.paymentAmount = paymentAmount;
+    }
+
+    public BigDecimal getPaymentAmount() {
+        return paymentAmount;
+    }
+
+    public void setPaymentTime(Date paymentTime) {
+        this.paymentTime = paymentTime;
+    }
+
+    public Date getPaymentTime() {
+        return paymentTime;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setBankCode(String bankCode) {
+        this.bankCode = bankCode;
+    }
+
+    public String getBankCode() {
+        return bankCode;
+    }
 }
