@@ -20,5 +20,8 @@ public class Wishlist {
     @JoinColumn(name = "CourseID")
     private Course course;
 
+    @Column(name = "Rating") // Add rating field
+    private Integer rating;
+
     // Constructors, getters, setters, and other methods as needed
 }
