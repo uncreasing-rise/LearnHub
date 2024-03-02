@@ -49,17 +49,29 @@ public class RoleConfig {
             Role role = new Role(roleName);
             roleRepository.save(role);
         }
-        User user = userRepository.findByEmail("Admin@email.com").orElse(
-                new User()
-                        .setEnable(true)
-                        .setEmail("Admin@email.com")
-                        .setFacebook("facebook")
-                        .setToken("token")
-                        .setImage("url")
-                        .setFullName("fullname")
-                        .setRoleId(roleRepository.findByRoleName(com.example.learnhub.security.Role.ADMIN.name()).get(0).getRoleId())
-                        .setUserPassword(AESUtils.encrypt("Password123@", key)));
-        userRepository.save(user);
-
+        else {
+            User user = userRepository.findByEmail("Admin@email.com").orElse(null);
+            if (user == null) {
+                List<Role> adminRoles = roleRepository.findByRoleName(com.example.learnhub.security.Role.ADMIN.name());
+                if (!adminRoles.isEmpty()) {
+                    Role adminRole = adminRoles.get(0);
+                    user = new User()
+                            .setEnable(true)
+                            .setEmail("Admin@email.com")
+                            .setFacebook("facebook")
+                            .setToken("token")
+                            .setImage("url")
+                            .setFullName("fullname")
+                            .setRoleId(adminRole.getRoleId())
+                            .setUserPassword(AESUtils.encrypt("Password123@", key));
+                    userRepository.save(user);
+                }
+                else {
+                    throw new RuntimeException("Admin role not found");
+                }
+            }
+        }
     }
+
+
 }

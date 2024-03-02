@@ -3,24 +3,23 @@ package com.example.learnhub.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "Quiz")
 public class Quiz {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "QuizID")
-    private Integer quizId;
+    @Column(name = "quiz_id")
+    private Integer id; // Changed to Long to match the GenerationType.IDENTITY
 
-    @ManyToOne
-    @JoinColumn(name = "CourseID")
-    private Course course;
+    @Column(name = "title", nullable = false) // Added nullable = false to enforce non-null title
+    private String title;
 
-    @Column(name = "QuizTitle")
-    private String quizTitle;
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Question> questions = new ArrayList<>();
 
-    @Column(name = "QuizDescription")
-    private String quizDescription;
-
-    // Constructors, getters, setters, and other methods as needed
+    // Constructors, getters, and setters
 }

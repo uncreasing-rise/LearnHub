@@ -48,17 +48,17 @@ public class ServiceOfAnswer {
     private Answer mapAnswerDTOToEntity(AnswerDTO answerDTO, Question question) {
         Answer answer = new Answer();
         answer.setQuestion(question);
-        answer.setAnswerText(answerDTO.getAnswerText());
-        answer.setIsCorrect(answerDTO.getIsCorrect());
+        answer.setText(answerDTO.getAnswerText());
+        answer.setCorrect(answerDTO.getIsCorrect());
         return answer;
     }
 
     private AnswerDTO mapAnswerEntityToDTO(Answer answer) {
         AnswerDTO answerDTO = new AnswerDTO();
-        answerDTO.setAnswerId(answer.getAnswerId());
-        answerDTO.setQuestionId(answer.getQuestion().getQuestionId());
-        answerDTO.setAnswerText(answer.getAnswerText());
-        answerDTO.setIsCorrect(answer.getIsCorrect());
+        answerDTO.setAnswerId(answer.getId());
+        answerDTO.setQuestionId(answer.getQuestion().getId());
+        answerDTO.setAnswerText(answer.getText());
+        answerDTO.setIsCorrect(answer.isCorrect());
         return answerDTO;
     }
 }

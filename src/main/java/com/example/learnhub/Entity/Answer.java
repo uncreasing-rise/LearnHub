@@ -9,18 +9,18 @@ import lombok.Data;
 public class Answer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "AnswerID")
-    private Integer answerId;
+    @Column(name = "answer_id")
+    private Integer id;
+
+    @Column(name = "text")
+    private String text;
+
+    @Column(name = "is_correct") // Add column for correctness indicator
+    private boolean correct;
 
     @ManyToOne
-    @JoinColumn(name = "QuestionID", nullable = false)
+    @JoinColumn(name = "question_id")
     private Question question;
-
-    @Column(name = "AnswerText")
-    private String answerText;
-
-    @Column(name = "IsCorrect")
-    private Boolean isCorrect;
 
     // Getters and setters
 }
