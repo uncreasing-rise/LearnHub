@@ -9,6 +9,8 @@ import com.example.learnhub.Repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class ServiceOfComment {
 
@@ -33,5 +35,27 @@ public class ServiceOfComment {
         comment.setCourse(courseRepository.findById(commentDTO.getCourseId()).orElse(null));
         comment.setVideo(videoRepository.findById(commentDTO.getVideoId()).orElse(null));
         return commentRepository.save(comment);
+    }
+
+    public Optional<Comment> getCommentById(Integer commentId) {
+        return commentRepository.findById(commentId);
+    }
+
+    public Comment updateComment(Integer commentId, CommentDTO updatedCommentDTO) {
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if (optionalComment.isPresent()) {
+            Comment comment = optionalComment.get();
+            comment.setCommentText(updatedCommentDTO.getCommentText());
+            comment.setUser(userRepository.findById(updatedCommentDTO.getUserId()).orElse(null));
+            comment.setCourse(courseRepository.findById(updatedCommentDTO.getCourseId()).orElse(null));
+            comment.setVideo(videoRepository.findById(updatedCommentDTO.getVideoId()).orElse(null));
+            return commentRepository.save(comment);
+        } else {
+            throw new IllegalArgumentException("Comment not found with id: " + commentId);
+        }
+    }
+
+    public void deleteComment(Integer commentId) {
+        commentRepository.deleteById(commentId);
     }
 }

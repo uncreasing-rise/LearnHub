@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-
 @RestController
 @RequestMapping("/articles")
 public class ArticleController {
@@ -37,5 +36,23 @@ public class ArticleController {
         return new ResponseEntity<>("Articles created successfully", HttpStatus.CREATED);
     }
 
-    // You can add more methods as needed for updating, deleting, or retrieving individual articles
+    @PutMapping("/{id}")
+    public ResponseEntity<Article> updateArticle(@PathVariable Integer id, @RequestBody Article updatedArticle) {
+        Article article = serviceOfArticle.updateArticle(id, updatedArticle);
+        return new ResponseEntity<>(article, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteArticle(@PathVariable Integer id) {
+        serviceOfArticle.deleteArticle(id);
+        return new ResponseEntity<>("Article deleted successfully", HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Article> getArticleById(@PathVariable Integer id) {
+        Article article = serviceOfArticle.getArticleById(id);
+        return new ResponseEntity<>(article, HttpStatus.OK);
+    }
+
+    // Add more methods for retrieving multiple articles, searching, etc.
 }

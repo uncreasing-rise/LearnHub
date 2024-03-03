@@ -6,6 +6,7 @@ import com.example.learnhub.Entity.Section;
 import com.example.learnhub.Service.IServiceOfArticle;
 import com.example.learnhub.Service.ServiceOfFile;
 import com.example.learnhub.Repository.ArticleRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -67,5 +68,31 @@ public class ServiceOfArticle implements IServiceOfArticle {
 
         // Check if the file extension is in the supported list
         return supportedExtensions.contains(extension.toLowerCase());
+    }
+    public List<Article> getAllArticles() {
+        return articleRepository.findAll();
+    }
+
+    public Article getArticleById(Integer id) {
+        return articleRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Article not found with id: " + id));
+    }
+
+    public Article updateArticle(Integer id, Article updatedArticle) {
+        Article existingArticle = articleRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Article not found with id: " + id));
+
+        // Update properties of the existing article with those from the updated article
+        existingArticle.setArticleData(updatedArticle.getArticleData());
+        // Update other properties as needed...
+
+        return articleRepository.save(existingArticle);
+    }
+
+    public void deleteArticle(Integer id) {
+        Article existingArticle = articleRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Article not found with id: " + id));
+
+        articleRepository.delete(existingArticle);
     }
 }
