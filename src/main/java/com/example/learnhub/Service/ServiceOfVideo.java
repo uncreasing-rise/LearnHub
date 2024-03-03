@@ -3,6 +3,7 @@ package com.example.learnhub.Service;
 import com.example.learnhub.Entity.Section;
 import com.example.learnhub.Entity.Video;
 import com.example.learnhub.Repository.VideoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -10,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ServiceOfVideo implements IServiceOfVideo {
@@ -23,54 +25,87 @@ public class ServiceOfVideo implements IServiceOfVideo {
         this.videoRepository = videoRepository;
     }
 
+    @Override
     public Video createVideo(Video video) {
         return videoRepository.save(video);
     }
 
+    @Override
+    public Optional<Video> findVideoById(Integer id) {
+        return videoRepository.findById(id);
+    }
+
+    @Override
+    public Video updateVideo(Integer id, Video updatedVideo) {
+        Optional<Video> optionalExistingVideo = videoRepository.findById(id);
+        if (optionalExistingVideo.isPresent()) {
+            Video existingVideo = optionalExistingVideo.get();
+            existingVideo.setVideoData(updatedVideo.getVideoData());
+            // Update other properties as needed...
+            return videoRepository.save(existingVideo);
+        } else {
+            throw new EntityNotFoundException();
+        }
+    }
+
+    @Override
+    public void deleteVideo(Integer id) {
+        videoRepository.deleteById(id);
+    }
+
+    @Override
     public void createVideos(Section section, List<MultipartFile> videoFiles) {
-        if (videoFiles != null) {
-            for (MultipartFile videoFile : videoFiles) {
-                try {
-                    // Check if the file is not empty and is a video file
-                    if (!videoFile.isEmpty() && isVideoFile(videoFile)) {
-                        // Upload video file to GCS using ServiceOfFile
-                        serviceOfFile.uploadFile(videoFile);
+        if (videoFiles == null || videoFiles.isEmpty()) {
+            throw new IllegalArgumentException("No video files provided");
+        }
 
-                        // Create Video entity and associate it with the Section
-                        Video video = new Video();
-                        video.setVideoScript(""); // Set video script if needed
-                        video.setVideoData(""); // Set video data if needed
-                        video.setSectionID(section.getSectionId()); // Set the section ID
+        for (MultipartFile videoFile : videoFiles) {
+            if (videoFile.isEmpty()) {
+                // Skip empty files
+                continue;
+            }
 
-                        // Save the Video entity
-                        createVideo(video);
-                    }
-                } catch (IOException e) {
-                    // Handle upload failure
-                    e.printStackTrace();
+            try {
+                if (isVideoFile(videoFile)) {
+                    // Upload video file to GCS using ServiceOfFile
+                    serviceOfFile.uploadFile(videoFile);
+
+                    // Since uploadFile is void and does not return the videoData,
+                    // you might need to retrieve or generate an identifier for the uploaded file
+                    String videoData = generateIdentifier(videoFile);
+
+                    // Create Video entity
+                    Video video = new Video();
+                    video.setVideoData(videoData);
+                    video.setSectionID(section.getSectionId()); // Set the section
+
+                    // Save the Video entity
+                    videoRepository.save(video);
+                } else {
+                    throw new IllegalArgumentException("File is not a valid video file");
                 }
+            } catch (IOException e) {
+                // Handle upload failure
+                e.printStackTrace();
             }
         }
     }
 
     private boolean isVideoFile(MultipartFile file) {
-        // Get the file extension
         String filename = file.getOriginalFilename();
-        if (filename != null) {
-            String extension = StringUtils.getFilenameExtension(filename);
-
-            // Check if the file extension is for a video file
-            // Add more video file extensions as needed (e.g., mkv, flv, etc.)
-            return extension != null && (
-                    extension.equalsIgnoreCase("mp4") ||
-                            extension.equalsIgnoreCase("avi") ||
-                            extension.equalsIgnoreCase("mov") ||
-                            extension.equalsIgnoreCase("mkv") ||
-                            extension.equalsIgnoreCase("flv")
-                    // Add more extensions here
-            );
-        }
-        return false; // If the filename is null, consider it as not a video file
+        return StringUtils.hasText(filename) && getVideoFileExtensions().stream()
+                .anyMatch(ext -> filename.toLowerCase().endsWith(ext));
     }
 
+    private List<String> getVideoFileExtensions() {
+        // Add more video file extensions as needed (e.g., mkv, flv, etc.)
+        return List.of(".mp4", ".avi", ".mov", ".mkv", ".flv");
+    }
+
+    // This method generates an identifier for the uploaded file
+    private String generateIdentifier(MultipartFile file) {
+        // Your implementation here to generate an identifier for the uploaded file
+        // For example, you might use a UUID
+        return java.util.UUID.randomUUID().toString();
+    }
 }

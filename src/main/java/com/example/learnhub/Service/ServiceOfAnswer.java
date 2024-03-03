@@ -5,11 +5,14 @@ import com.example.learnhub.Entity.Answer;
 import com.example.learnhub.Entity.Question;
 import com.example.learnhub.Repository.AnswerRepository;
 import com.example.learnhub.Repository.QuestionRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ServiceOfAnswer {
@@ -22,20 +25,52 @@ public class ServiceOfAnswer {
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
     }
-
     @Transactional
     public AnswerDTO createAnswer(AnswerDTO answerDTO) {
-        validateAnswerDTO(answerDTO); // Validate the AnswerDTO
+        validateAnswerDTO(answerDTO);
 
         Optional<Question> optionalQuestion = questionRepository.findById(answerDTO.getQuestionId());
         if (optionalQuestion.isPresent()) {
             Question question = optionalQuestion.get();
-            Answer answer = mapAnswerDTOToEntity(answerDTO, question); // Pass the found question
+            Answer answer = mapAnswerDTOToEntity(answerDTO, question);
             Answer savedAnswer = answerRepository.save(answer);
             return mapAnswerEntityToDTO(savedAnswer);
         } else {
             throw new RuntimeException("Question not found");
         }
+    }
+
+    public List<AnswerDTO> getAllAnswers() {
+        List<Answer> answers = answerRepository.findAll();
+        return answers.stream()
+                .map(this::mapAnswerEntityToDTO)
+                .collect(Collectors.toList());
+    }
+
+    public AnswerDTO getAnswerById(Integer id) {
+        Answer answer = answerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Answer not found with id: " + id));
+        return mapAnswerEntityToDTO(answer);
+    }
+
+    @Transactional
+    public AnswerDTO updateAnswer(Integer id, AnswerDTO updatedAnswerDTO) {
+        validateAnswerDTO(updatedAnswerDTO);
+        Answer existingAnswer = answerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Answer not found with id: " + id));
+        existingAnswer.setText(updatedAnswerDTO.getAnswerText());
+        existingAnswer.setCorrect(updatedAnswerDTO.getIsCorrect());
+        // Update other properties as needed...
+
+        Answer savedAnswer = answerRepository.save(existingAnswer);
+        return mapAnswerEntityToDTO(savedAnswer);
+    }
+
+    @Transactional
+    public void deleteAnswer(Integer id) {
+        Answer existingAnswer = answerRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Answer not found with id: " + id));
+        answerRepository.delete(existingAnswer);
     }
 
     private void validateAnswerDTO(AnswerDTO answerDTO) {

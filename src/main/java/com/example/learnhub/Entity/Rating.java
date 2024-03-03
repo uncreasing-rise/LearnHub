@@ -3,6 +3,7 @@ package com.example.learnhub.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @Entity
@@ -25,5 +26,5 @@ public class Rating {
     private User user;
 
     @Column(name = "rating_time")
-    private LocalDate ratingTime; // Use LocalDate for better date handling
+    private Date ratingTime; // Use LocalDate for better date handling
 }
