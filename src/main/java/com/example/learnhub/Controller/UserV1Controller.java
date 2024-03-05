@@ -76,9 +76,9 @@ public class UserV1Controller {
             }
 
 
-            if(Boolean.TRUE.equals(user.getEnable())) {
-                throw new BusinessException(ErrorMessage.USER_ENABLED);
-            }
+           // if(Boolean.TRUE.equals(user.getEnable())) {
+               // throw new BusinessException(ErrorMessage.USER_ENABLED);
+           // }
 
             List<Role> roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.STUDENT.name());
             String randomString = RandomStringGenerator.generateRandomString(6);
@@ -443,7 +443,7 @@ public class UserV1Controller {
             throw new BusinessException(ErrorMessage.USER_LOGIN_FAIL);
         }
     }
-
+// Todo: Soft Delete
     @DeleteMapping("/v1/{id}")
     ResponseEntity<ApiResponse<UserResponse>> deleteUser(Principal principal, @PathVariable(name = "id")String id){
         try {
@@ -476,7 +476,7 @@ public class UserV1Controller {
         }
     }
 
-
+// Todo: Restore user
     @PostMapping("/v1/restore/{id}")
     ResponseEntity<ApiResponse<UserResponse>> restoreUser(Principal principal, @PathVariable(name = "id")String id){
         try {
