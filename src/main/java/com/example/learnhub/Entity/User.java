@@ -67,15 +67,7 @@ public class User {
         this.roleId = roleId;
     }
 
-    // Helper method to add a course to the user
-    public void addCourse(Course course) {
-        courses.add(course);
-        course.getUsers().add(this);
-    }
+    
 
-    // Helper method to remove a course from the user
-    public void removeCourse(Course course) {
-        courses.remove(course);
-        course.getUsers().remove(this);
-    }
+    // Helper method to add a course to the user
 }

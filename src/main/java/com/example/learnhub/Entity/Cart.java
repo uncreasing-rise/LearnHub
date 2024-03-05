@@ -2,6 +2,8 @@ package com.example.learnhub.Entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Date;
 
@@ -24,4 +26,35 @@ public class Cart {
     @Column(name = "CartDate")
     private Date cartDate;
 
+    public Integer getCartId() {
+        return cartId;
+    }
+
+    public void setCartId(Integer cartId) {
+        this.cartId = cartId;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Date getCartDate() {
+        return cartDate;
+    }
+
+    public void setCartDate(Date cartDate) {
+        this.cartDate = cartDate;
+    }
 }

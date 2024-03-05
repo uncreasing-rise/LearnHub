@@ -144,7 +144,7 @@ public class CourseController implements InterfaceOfCourseController {
     public ResponseEntity<CourseDTO> rateCourse(@PathVariable int id, @PathVariable int rating) {
         // Create a Rating object with the provided rating value
         Rating newRating = new Rating();
-        newRating.setRatingValue(rating);
+     //  newRating.(rating);
 
         // Create a list containing the single rating
         List<Rating> ratings = Collections.singletonList(newRating);
