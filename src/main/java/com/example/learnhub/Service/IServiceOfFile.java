@@ -14,5 +14,6 @@ public interface IServiceOfFile {
 
     boolean deleteFile(String fileName);
 
+
     void uploadFile(MultipartFile file) throws IOException;
 }

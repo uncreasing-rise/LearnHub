@@ -1,26 +1,34 @@
 package com.example.learnhub.Service;
 
+import com.example.learnhub.DTO.QuestionDTO;
 import com.example.learnhub.DTO.QuizDTO;
 import com.example.learnhub.Entity.Question;
 import com.example.learnhub.Entity.Quiz;
+import com.example.learnhub.Repository.QuestionRepository;
 import com.example.learnhub.Repository.QuizRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ServiceOfQuiz {
+    private final QuestionRepository questionRepository;
 
     private final QuizRepository quizRepository;
+    private final ServiceOfQuestion serviceOfQuestion;
 
     @Autowired
-    public ServiceOfQuiz(QuizRepository quizRepository) {
+    public ServiceOfQuiz(QuestionRepository questionRepository, QuizRepository quizRepository, ServiceOfQuestion serviceOfQuestion) {
+        this.questionRepository = questionRepository;
         this.quizRepository = quizRepository;
+        this.serviceOfQuestion = serviceOfQuestion;
     }
 
-    public QuizDTO createQuiz(QuizDTO quizDTO) {
+    @Transactional
+    public Quiz createQuiz(QuizDTO quizDTO) {
         // Convert DTO to entity
         Quiz quiz = convertToQuizEntity(quizDTO);
 
@@ -29,25 +37,28 @@ public class ServiceOfQuiz {
             throw new IllegalArgumentException("A quiz must have at least two questions.");
         }
 
-        // Map questions from DTO to entities
-        List<Question> questions = quizDTO.getQuestions().stream()
-                .map(questionDTO -> {
-                    Question question = new Question();
-                    question.setText(questionDTO.getQuestionText());
-                    // Map other properties as needed
-                    return question;
-                })
-                .collect(Collectors.toList());
-
-        // Set questions to the quiz
-        quiz.setQuestions(questions);
-
-        // Save the entity
+        // Save the entity first
         Quiz savedQuiz = quizRepository.save(quiz);
 
-        // Convert entity to DTO
-        return convertToQuizDTO(savedQuiz);
+        // Map questions from DTO to entities
+        List<Question> questions = new ArrayList<>();
+        for (QuestionDTO questionDTO : quizDTO.getQuestions()) {
+            // Convert QuestionDTO to Question entity
+            Question question = serviceOfQuestion.createQuestion(questionDTO);
+            // Set quiz for the question
+            question.setQuiz(savedQuiz);
+            // Save the question entity
+            questionRepository.save(question); // Assuming you have a method to save a single question
+            questions.add(question);
+        }
+
+        // Set questions to the quiz
+        savedQuiz.setQuestions(questions);
+
+        // Return the saved quiz entity
+        return savedQuiz;
     }
+
 
     private Quiz convertToQuizEntity(QuizDTO quizDTO) {
         Quiz quiz = new Quiz();

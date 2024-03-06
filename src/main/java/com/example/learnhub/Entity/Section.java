@@ -15,7 +15,13 @@ public class Section {
     @Column(name = "SectionName")
     private String sectionName;
 
-    @ManyToOne // Many sections can be associated with one course
+    @Column(name = "VideoPath")
+    private String videoPath;
+
+    @Column(name = "ArticlePath")
+    private String articlePath;
+
+    @ManyToOne
     @JoinColumn(name = "CourseID")
-    private Course course; // Change the type to Course
+    private Course course;
 }

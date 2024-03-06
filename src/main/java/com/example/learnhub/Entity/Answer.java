@@ -15,12 +15,12 @@ public class Answer {
     @Column(name = "text")
     private String text;
 
-    @Column(name = "is_correct") // Add column for correctness indicator
+    @Column(name = "is_correct")
     private boolean correct;
 
     @ManyToOne
     @JoinColumn(name = "question_id")
     private Question question;
 
-    // Getters and setters
+    // Constructors, getters, and setters
 }

@@ -27,8 +27,7 @@ public class Course {
     @Column(name = "CoursePrice")
     private Double coursePrice;
 
-    @Column(name = "CategoryID")
-    private Integer categoryId;
+
 
     @Column(name = "IsPassed")
     private Boolean isPassed;
@@ -59,7 +58,7 @@ public class Course {
     private List<Section> sections = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "CategoryID", insertable = false, updatable = false)
+    @JoinColumn(name = "CategoryID") // Adjusted, insertable and updatable removed
     private Category category;
 
     @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -73,7 +72,6 @@ public class Course {
             inverseJoinColumns = @JoinColumn(name = "UserID")
     )
     private List<User> users = new ArrayList<>();
-
 
     // getters and setters
 

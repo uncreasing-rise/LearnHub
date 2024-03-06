@@ -5,11 +5,11 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
-@   Data
+@Data
 public class SectionDTO {
     private Integer sectionId;
     private String sectionName;
     private Integer courseId; // Renamed to follow camelCase convention
     private List<MultipartFile> videoFiles; // List of MultipartFile objects for videos
-    private List<ArticleDTO> articles;
+    private List<MultipartFile> articleFiles;
 }

@@ -23,8 +23,6 @@ public class Comment {
     @JoinColumn(name = "CourseID")
     private Course course;
 
-    @ManyToOne
-    @JoinColumn(name = "VideoID")
-    private Video video;
+
 
 }

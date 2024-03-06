@@ -52,6 +52,7 @@ public class ServiceOfFile implements IServiceOfFile {
         return blob.delete();
     }
 
+
     @Override
     public void uploadFile(MultipartFile file) throws IOException {
 
@@ -59,5 +60,9 @@ public class ServiceOfFile implements IServiceOfFile {
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).
                 setContentType(file.getContentType()).build();
         Blob blob = storage.create(blobInfo,file.getBytes());
+    }
+
+    public String constructFileUrl(String originalFilename) {
+        return originalFilename;
     }
 }

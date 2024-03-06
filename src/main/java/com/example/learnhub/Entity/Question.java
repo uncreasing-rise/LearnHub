@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Data
 @Entity
 @Table(name = "Question")
@@ -14,8 +15,11 @@ public class Question {
     @Column(name = "question_id")
     private Integer id;
 
-    @Column(name = "text")
+    @Column(name = "text", nullable = false)
     private String text;
+
+    @Column(name = "point")
+    private Integer point;
 
     @ManyToOne
     @JoinColumn(name = "quiz_id")
@@ -24,5 +28,5 @@ public class Question {
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers = new ArrayList<>();
 
-    // Getters and setters
+    // Constructors, getters, and setters
 }

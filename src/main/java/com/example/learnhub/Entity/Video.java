@@ -1,6 +1,5 @@
 package com.example.learnhub.Entity;
 
-import com.google.api.client.util.PemReader;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,6 +12,12 @@ public class Video {
     @Column(name = "VideoID")
     private Integer videoId;
 
+    @Column(name = "Title")
+    private String title;
+
+    @Column(name = "Description")
+    private String description;
+
     @Column(name = "VideoData")
     private String videoData;
 
@@ -24,5 +29,4 @@ public class Video {
 
     @Column(name = "SectionID")
     private Integer sectionID;
-
 }

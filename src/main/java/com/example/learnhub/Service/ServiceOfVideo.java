@@ -40,7 +40,10 @@ public class ServiceOfVideo implements IServiceOfVideo {
         Optional<Video> optionalExistingVideo = videoRepository.findById(id);
         if (optionalExistingVideo.isPresent()) {
             Video existingVideo = optionalExistingVideo.get();
+            // Update video data properties
             existingVideo.setVideoData(updatedVideo.getVideoData());
+            existingVideo.setVideoScript(updatedVideo.getVideoScript());
+            existingVideo.setIsTrial(updatedVideo.getIsTrial());
             // Update other properties as needed...
             return videoRepository.save(existingVideo);
         } else {
@@ -67,21 +70,17 @@ public class ServiceOfVideo implements IServiceOfVideo {
 
             try {
                 if (isVideoFile(videoFile)) {
-                    // Upload video file to GCS using ServiceOfFile
-                    serviceOfFile.uploadFile(videoFile);
+                // Upload video file to GCS using ServiceOfFile
+                serviceOfFile.uploadFile(videoFile);
 
-                    // Since uploadFile is void and does not return the videoData,
-                    // you might need to retrieve or generate an identifier for the uploaded file
-                    String videoData = generateIdentifier(videoFile);
+                // Create Video entity
+                Video video = new Video();
+                // Set other properties of the Video entity
+                video.setSectionID(section.getSectionId());
 
-                    // Create Video entity
-                    Video video = new Video();
-                    video.setVideoData(videoData);
-                    video.setSectionID(section.getSectionId()); // Set the section
-
-                    // Save the Video entity
-                    videoRepository.save(video);
-                } else {
+                // Save the Video entity
+                videoRepository.save(video);
+            } else {
                     throw new IllegalArgumentException("File is not a valid video file");
                 }
             } catch (IOException e) {
@@ -90,6 +89,8 @@ public class ServiceOfVideo implements IServiceOfVideo {
             }
         }
     }
+
+
 
     private boolean isVideoFile(MultipartFile file) {
         String filename = file.getOriginalFilename();
@@ -100,12 +101,5 @@ public class ServiceOfVideo implements IServiceOfVideo {
     private List<String> getVideoFileExtensions() {
         // Add more video file extensions as needed (e.g., mkv, flv, etc.)
         return List.of(".mp4", ".avi", ".mov", ".mkv", ".flv");
-    }
-
-    // This method generates an identifier for the uploaded file
-    private String generateIdentifier(MultipartFile file) {
-        // Your implementation here to generate an identifier for the uploaded file
-        // For example, you might use a UUID
-        return java.util.UUID.randomUUID().toString();
     }
 }

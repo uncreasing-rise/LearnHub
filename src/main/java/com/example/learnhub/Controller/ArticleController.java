@@ -1,58 +1,64 @@
 package com.example.learnhub.Controller;
 
-import com.example.learnhub.DTO.ArticleDTO;
 import com.example.learnhub.Entity.Article;
-import com.example.learnhub.Entity.Section;
+import com.example.learnhub.Entity.Video;
 import com.example.learnhub.Service.ServiceOfArticle;
+import com.example.learnhub.Service.ServiceOfFile;
+import com.example.learnhub.Service.ServiceOfVideo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/articles")
 public class ArticleController {
 
-    private final ServiceOfArticle serviceOfArticle;
+    private final ServiceOfArticle articleService;
+    private final ServiceOfFile fileService; // Inject the ServiceOfFile bean
 
     @Autowired
-    public ArticleController(ServiceOfArticle serviceOfArticle) {
-        this.serviceOfArticle = serviceOfArticle;
+    public ArticleController(ServiceOfArticle articleService, ServiceOfFile fileService) {
+        this.articleService = articleService;
+        this.fileService = fileService; // Initialize the fileService bean
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Article> createArticle(@RequestBody Article article) {
-        Article createdArticle = serviceOfArticle.createArticle(article);
-        return new ResponseEntity<>(createdArticle, HttpStatus.CREATED);
-    }
+    public ResponseEntity<Article> createVideo(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description) {
+        // Check if file is provided
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
 
-    @PostMapping("/create/multiple")
-    public ResponseEntity<String> createMultipleArticles(@RequestBody List<ArticleDTO> articleDTOs, @RequestParam Integer sectionId) {
-        Section section = new Section();
-        section.setSectionId(sectionId);
-        serviceOfArticle.createArticles(section, articleDTOs);
-        return new ResponseEntity<>("Articles created successfully", HttpStatus.CREATED);
-    }
+        try {
+            fileService.uploadFile(file);
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Article> updateArticle(@PathVariable Integer id, @RequestBody Article updatedArticle) {
-        Article article = serviceOfArticle.updateArticle(id, updatedArticle);
-        return new ResponseEntity<>(article, HttpStatus.OK);
-    }
+            // Upload video file to Google Cloud Storage
+            String gcsPath = "gs://" + "learnhub_bucket" + "/" + file.getOriginalFilename();
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteArticle(@PathVariable Integer id) {
-        serviceOfArticle.deleteArticle(id);
-        return new ResponseEntity<>("Article deleted successfully", HttpStatus.OK);
-    }
+            // Create Video entity
+            Article article = new Article();
+            article.setTitle(title);
+            article.setDescription(description);
+            article.setArticleData(gcsPath); // Set GCS URI as video data
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Article> getArticleById(@PathVariable Integer id) {
-        Article article = serviceOfArticle.getArticleById(id);
-        return new ResponseEntity<>(article, HttpStatus.OK);
-    }
+            // Save the Video entity
+            Article createdArticle = articleService.createArticle(article);
 
-    // Add more methods for retrieving multiple articles, searching, etc.
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdArticle);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null); // Return null or handle the error appropriately
+        }
+    }
 }

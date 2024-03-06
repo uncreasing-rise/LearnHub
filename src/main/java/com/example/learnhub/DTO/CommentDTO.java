@@ -8,6 +8,5 @@ public class CommentDTO {
     private String commentText;
     private Integer userId;
     private Integer courseId;
-    private Integer videoId;
 
 }
