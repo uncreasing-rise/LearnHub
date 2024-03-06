@@ -2,26 +2,23 @@ package com.example.learnhub.Controller;
 
 import com.example.learnhub.DTO.CourseDTO;
 import com.example.learnhub.Entity.Course;
-import com.example.learnhub.Entity.Rating;
 import com.example.learnhub.Exceptions.AppServiceExeption;
-import com.example.learnhub.InterfaceOfControllers.InterfaceOfCourseController;
 import com.example.learnhub.Repository.CourseRepository;
 import com.example.learnhub.Service.ServiceOfCourse;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
+import java.util.*;
+@MultipartConfig
 @RestController
 @RequestMapping("/courses")
-public class CourseController implements InterfaceOfCourseController {
+public class CourseController{
     @Autowired
     CourseRepository courseRepository;
 
@@ -57,9 +54,17 @@ public class CourseController implements InterfaceOfCourseController {
 
     @PostMapping("/addCourse")
     @ResponseStatus(HttpStatus.CREATED)
-    public CourseDTO createCourse(@RequestBody @Valid CourseDTO dto) throws AppServiceExeption {
+    public CourseDTO createCourse(@RequestBody @Valid CourseDTO courseDTO,
+                                  @RequestParam("videoFiles") List<MultipartFile> videoFiles,
+                                  @RequestParam("articleFiles") List<MultipartFile> articleFiles) throws AppServiceExeption {
         try {
-            Course createdCourse = courseService.createCourse(dto);
+            // Kiểm tra dữ liệu đầu vào
+            if (courseDTO == null || videoFiles == null || articleFiles == null) {
+                throw new IllegalArgumentException("CourseDTO and file lists are required");
+            }
+
+            // Logic xử lý và lưu dữ liệu
+            Course createdCourse = courseService.createCourse(courseDTO, videoFiles, articleFiles);
             return courseService.fromCourseToCourseDTO(createdCourse);
         } catch (DataIntegrityViolationException e) {
             throw new AppServiceExeption("Database integrity violation. Fail to create Course");
@@ -67,6 +72,8 @@ public class CourseController implements InterfaceOfCourseController {
             throw new AppServiceExeption("Unexpected error. Fail to create Course");
         }
     }
+
+
 
 
     @GetMapping("/getCourses")
@@ -139,22 +146,5 @@ public class CourseController implements InterfaceOfCourseController {
     public void deleteCourse(@PathVariable int id) {
         courseService.deleteCourse(id);
     }
-
-    @PostMapping("/rateCourse/{id}/{rating}")
-    public ResponseEntity<CourseDTO> rateCourse(@PathVariable int id, @PathVariable int rating) {
-        // Create a Rating object with the provided rating value
-        Rating newRating = new Rating();
-        newRating.setRatingValue(rating);
-
-        // Create a list containing the single rating
-        List<Rating> ratings = Collections.singletonList(newRating);
-
-        CourseDTO updatedCourse = courseService.rateCourse(id, ratings);
-
-        return updatedCourse != null
-                ? new ResponseEntity<>(updatedCourse, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
 
 }

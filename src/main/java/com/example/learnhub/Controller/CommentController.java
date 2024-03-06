@@ -23,13 +23,13 @@ public class CommentController {
 
     @PostMapping("/create")
     public ResponseEntity<Comment> createComment(@RequestBody CommentDTO commentDTO) {
-        Comment createdComment = serviceOfComment.createComment(commentDTO);
+        Comment createdComment = serviceOfComment.leaveCommentAtCourse(commentDTO.getUserId(), commentDTO.getCourseId(), commentDTO.getCommentText());
         return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Comment> updateComment(@PathVariable Integer id, @RequestBody CommentDTO updatedCommentDTO) {
-        Comment updatedComment = serviceOfComment.updateComment(id, updatedCommentDTO);
+        Comment updatedComment = serviceOfComment.updateComment(id, updatedCommentDTO.getCommentText());
         return new ResponseEntity<>(updatedComment, HttpStatus.OK);
     }
 
@@ -49,7 +49,6 @@ public class CommentController {
             return ResponseEntity.notFound().build();
         }
     }
-
 
     // Add more methods for retrieving multiple comments, searching, etc.
 }

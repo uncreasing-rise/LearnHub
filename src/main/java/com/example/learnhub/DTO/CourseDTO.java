@@ -1,5 +1,6 @@
 package com.example.learnhub.DTO;
 
+import com.example.learnhub.Entity.Category;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -12,14 +13,13 @@ public class CourseDTO {
     private String courseTitle;
     private String courseDes;
     private Double coursePrice;
-    private Integer categoryId;
+    private Category category;
     private Boolean isPassed;
     private Date courseDate;
     private Integer ratingId;
     private String level;
     private String tag;
     private Integer userId;
-    private CategoryDTO category;
     private LearningDetailDTO learningDetail;
     private ImageDTO image;  // Added ImageDTO field
     private Integer status;

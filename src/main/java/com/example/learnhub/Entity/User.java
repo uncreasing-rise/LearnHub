@@ -45,7 +45,8 @@ public class User {
     private Boolean enable;
 
     private String stringRandom;
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Wishlist> wishlists;
     private Boolean deleted = Boolean.FALSE;
 
     @ManyToMany

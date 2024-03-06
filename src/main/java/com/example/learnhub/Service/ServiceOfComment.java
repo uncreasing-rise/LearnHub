@@ -1,11 +1,11 @@
 package com.example.learnhub.Service;
 
-import com.example.learnhub.DTO.CommentDTO;
 import com.example.learnhub.Entity.Comment;
+import com.example.learnhub.Entity.Course;
+import com.example.learnhub.Entity.User;
 import com.example.learnhub.Repository.CommentRepository;
 import com.example.learnhub.Repository.CourseRepository;
 import com.example.learnhub.Repository.UserRepository;
-import com.example.learnhub.Repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,44 +17,48 @@ public class ServiceOfComment {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
-    private final VideoRepository videoRepository;
 
     @Autowired
     public ServiceOfComment(CommentRepository commentRepository, UserRepository userRepository,
-                            CourseRepository courseRepository, VideoRepository videoRepository) {
+                            CourseRepository courseRepository) {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
-        this.videoRepository = videoRepository;
     }
 
-    public Comment createComment(CommentDTO commentDTO) {
+    // Method to leave a comment at a course
+    public Comment leaveCommentAtCourse(Integer userId, Integer courseId, String commentText) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+
         Comment comment = new Comment();
-        comment.setCommentText(commentDTO.getCommentText());
-        comment.setUser(userRepository.findById(commentDTO.getUserId()).orElse(null));
-        comment.setCourse(courseRepository.findById(commentDTO.getCourseId()).orElse(null));
-        comment.setVideo(videoRepository.findById(commentDTO.getVideoId()).orElse(null));
-        return commentRepository.save(comment);
+        comment.setUser(user);
+        comment.setCourse(course);
+        comment.setCommentText(commentText);
+
+        commentRepository.save(comment);
+        return comment;
     }
 
+    // Method to update a comment
+    public Comment updateComment(Integer commentId, String updatedCommentText) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        comment.setCommentText(updatedCommentText);
+        commentRepository.save(comment);
+        return comment;
+    }
+
+    // Method to retrieve a comment by ID
     public Optional<Comment> getCommentById(Integer commentId) {
         return commentRepository.findById(commentId);
     }
 
-    public Comment updateComment(Integer commentId, CommentDTO updatedCommentDTO) {
-        Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if (optionalComment.isPresent()) {
-            Comment comment = optionalComment.get();
-            comment.setCommentText(updatedCommentDTO.getCommentText());
-            comment.setUser(userRepository.findById(updatedCommentDTO.getUserId()).orElse(null));
-            comment.setCourse(courseRepository.findById(updatedCommentDTO.getCourseId()).orElse(null));
-            comment.setVideo(videoRepository.findById(updatedCommentDTO.getVideoId()).orElse(null));
-            return commentRepository.save(comment);
-        } else {
-            throw new IllegalArgumentException("Comment not found with id: " + commentId);
-        }
-    }
-
+    // Method to delete a comment
     public void deleteComment(Integer commentId) {
         commentRepository.deleteById(commentId);
     }

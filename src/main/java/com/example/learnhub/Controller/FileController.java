@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,14 +29,19 @@ public class FileController {
         return ResponseEntity.ok(files);
     }
 
-    //Upload file
-    @PostMapping("upload")
-    public ResponseEntity<String> uploadFile(
-            @RequestParam MultipartFile file) throws IOException {
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        try {
+            // Call uploadFile method from fileService
+            fileService.uploadFile(file);
 
-        fileService.uploadFile(file);
-
-        return ResponseEntity.ok("File uploaded successfully");
+            return ResponseEntity.ok("File uploaded successfully");
+        } catch (IOException e) {
+            // Handle file upload failure
+            e.printStackTrace(); // Print stack trace for debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to upload file: " + e.getMessage());
+        }
     }
 
     //Delete file

@@ -5,6 +5,6 @@ import org.springframework.data.crossstore.ChangeSetPersister;
 
 public interface IServiceOfWishlist {
     WishlistDTO addToWishList(WishlistDTO wishlistDTO);
-    WishlistDTO deleteWishlistItem(Integer wishlistId) throws ChangeSetPersister.NotFoundException;
+    void deleteWishlistItem(Integer wishlistId) throws ChangeSetPersister.NotFoundException;
 
 }

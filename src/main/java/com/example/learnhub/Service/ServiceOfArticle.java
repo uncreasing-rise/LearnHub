@@ -1,98 +1,91 @@
 package com.example.learnhub.Service;
 
-import com.example.learnhub.DTO.ArticleDTO;
 import com.example.learnhub.Entity.Article;
 import com.example.learnhub.Entity.Section;
-import com.example.learnhub.Service.IServiceOfArticle;
-import com.example.learnhub.Service.ServiceOfFile;
 import com.example.learnhub.Repository.ArticleRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ServiceOfArticle implements IServiceOfArticle {
 
-    private final ArticleRepository articleRepository;
     private final ServiceOfFile serviceOfFile;
+    private final ArticleRepository articleRepository;
 
     @Autowired
-    public ServiceOfArticle(ArticleRepository articleRepository, ServiceOfFile serviceOfFile) {
-        this.articleRepository = articleRepository;
+    public ServiceOfArticle(ServiceOfFile serviceOfFile, ArticleRepository articleRepository) {
         this.serviceOfFile = serviceOfFile;
+        this.articleRepository = articleRepository;
     }
 
+    @Override
     public Article createArticle(Article article) {
         return articleRepository.save(article);
     }
 
-    public void createArticles(Section section, List<ArticleDTO> articleDTOs) {
-        if (articleDTOs != null) {
-            for (ArticleDTO articleDTO : articleDTOs) {
-                try {
-                    // Check if the file is a text file
-                    if (isTextFile(articleDTO.getArticleFile())) {
-                        // Upload article file to GCS using ServiceOfFile
-                        serviceOfFile.uploadFile(articleDTO.getArticleFile());
+    @Override
+    public Optional<Article> findArticleById(Integer id) {
+        return articleRepository.findById(id);
+    }
 
-                        // Create Article entity and associate it with the Section
-                        Article article = new Article();
-                        // Set other properties of the article as needed
-                        article.setArticleData(""); // Set article data if needed
-                        article.setSection(section); // Set the section
 
-                        // Save the Article entity
-                        createArticle(article);
-                    } else {
-                        // Handle non-text files
-                        System.out.println("File " + articleDTO.getArticleFile().getOriginalFilename() + " is not a text file.");
-                    }
-                } catch (IOException e) {
-                    // Handle upload failure
-                    e.printStackTrace();
+
+    @Override
+    public void deleteArticle(Integer id) {
+        articleRepository.deleteById(id);
+    }
+
+    @Override
+    public void createArticles(Section section, List<MultipartFile> articleFiles) {
+        if (articleFiles == null || articleFiles.isEmpty()) {
+            throw new IllegalArgumentException("No Article files provided");
+        }
+
+        for (MultipartFile articleFile : articleFiles) {
+            if (articleFile.isEmpty()) {
+                // Skip empty files
+                continue;
+            }
+
+            try {
+
+                if (isArticleFile(articleFile)) {
+                    // Upload article file to GCS using ServiceOfFile
+                    serviceOfFile.uploadFile(articleFile);
+
+                    // Create Article entity
+                    Article article = new Article();
+                    article.setSectionID(section.getSectionId()); // Set the section
+
+                    // Save the Article entity
+                    articleRepository.save(article);
+                } else {
+                    throw new IllegalArgumentException("File is not a valid article file");
                 }
+            } catch (IOException e) {
+                // Handle upload failure
+                e.printStackTrace();
             }
         }
     }
 
-    private boolean isTextFile(MultipartFile file) {
-        // Get the file extension
-        String extension = StringUtils.getFilenameExtension(file.getOriginalFilename());
 
-        // List of supported text file extensions
-        List<String> supportedExtensions = List.of("txt", "pdf", "doc", "docx");
 
-        // Check if the file extension is in the supported list
-        return supportedExtensions.contains(extension.toLowerCase());
-    }
-    public List<Article> getAllArticles() {
-        return articleRepository.findAll();
+    private boolean isArticleFile(MultipartFile file) {
+        String filename = file.getOriginalFilename();
+        return StringUtils.hasText(filename) && getArticleFileExtensions().stream()
+                .anyMatch(ext -> filename.toLowerCase().endsWith(ext));
     }
 
-    public Article getArticleById(Integer id) {
-        return articleRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Article not found with id: " + id));
+    private List<String> getArticleFileExtensions() {
+        // Add more video file extensions as needed (e.g., mkv, flv, etc.)
+        return List.of(".pdf", ".txt", ".doc", ".docx");
     }
-
-    public Article updateArticle(Integer id, Article updatedArticle) {
-        Article existingArticle = articleRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Article not found with id: " + id));
-
-        // Update properties of the existing article with those from the updated article
-        existingArticle.setArticleData(updatedArticle.getArticleData());
-        // Update other properties as needed...
-
-        return articleRepository.save(existingArticle);
-    }
-
-    public void deleteArticle(Integer id) {
-        Article existingArticle = articleRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Article not found with id: " + id));
-
-        articleRepository.delete(existingArticle);
-    }
+    // Other methods for handling articles
 }

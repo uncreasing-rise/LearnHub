@@ -1,5 +1,6 @@
 package com.example.learnhub.DTO;
 
+import com.example.learnhub.Entity.Question;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -10,7 +11,7 @@ public class AnswerDTO {
     private Integer answerId;
 
     @NotNull
-    private Integer questionId;
+    private Question question;
 
     @NotNull
     @Size(max = 255)

@@ -8,7 +8,6 @@ import com.example.learnhub.Repository.CourseRepository;
 import com.example.learnhub.Repository.UserRepository;
 import com.example.learnhub.Repository.WishlistRepository;
 import org.springframework.stereotype.Service;
-
 @Service
 public class ServiceOfWishlist implements IServiceOfWishlist {
 
@@ -24,9 +23,10 @@ public class ServiceOfWishlist implements IServiceOfWishlist {
 
     @Override
     public WishlistDTO addToWishList(WishlistDTO wishlistDTO) {
-        int rating = wishlistDTO.getRating();
-        if (rating < 1 || rating > 5) {
-            throw new IllegalArgumentException("Rating must be between 1 and 5");
+        // Kiểm tra xem khoá học đã tồn tại trong wishlist chưa
+        Wishlist existingWishlistItem = wishlistRepository.findByCourse_CourseId(wishlistDTO.getCourseId());
+        if (existingWishlistItem != null) {
+            throw new RuntimeException("Course already exists in the wishlist");
         }
 
         User user = userRepository.findById(wishlistDTO.getUserId())
@@ -37,21 +37,19 @@ public class ServiceOfWishlist implements IServiceOfWishlist {
         Wishlist wishlist = new Wishlist();
         wishlist.setUser(user);
         wishlist.setCourse(course);
-        wishlist.setRating(rating);
 
         Wishlist savedWishlistItem = wishlistRepository.save(wishlist);
 
         return mapWishlistEntityToDTO(savedWishlistItem);
     }
 
+
     @Override
-    public WishlistDTO deleteWishlistItem(Integer wishlistId) {
-        Wishlist wishlistItemToDelete = wishlistRepository.findById(wishlistId).orElse(null);
-        if (wishlistItemToDelete == null) {
-            throw new RuntimeException("Wishlist item not found");
-        }
+    public void deleteWishlistItem(Integer wishlistId) {
+        Wishlist wishlistItemToDelete = wishlistRepository.findById(wishlistId)
+                .orElseThrow(() -> new IllegalArgumentException("Wishlist item not found with ID: " + wishlistId));
         wishlistRepository.delete(wishlistItemToDelete);
-        return mapWishlistEntityToDTO(wishlistItemToDelete);
+        mapWishlistEntityToDTO(wishlistItemToDelete);
     }
 
     private WishlistDTO mapWishlistEntityToDTO(Wishlist wishlist) {
@@ -59,7 +57,6 @@ public class ServiceOfWishlist implements IServiceOfWishlist {
         wishlistDTO.setWishlistId(wishlist.getWishlistId());
         wishlistDTO.setUserId(wishlist.getUser().getUserId());
         wishlistDTO.setCourseId(wishlist.getCourse().getCourseId());
-        wishlistDTO.setRating(wishlist.getRating());
         return wishlistDTO;
     }
 }

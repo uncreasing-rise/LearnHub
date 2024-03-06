@@ -56,7 +56,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     @Query("SELECT c FROM Course c WHERE c.status = 1")
     List<Course> displayIsNotApprovedCourses();
 
-    @Query("SELECT c FROM Course c WHERE c.categoryId = :categoryId")
+    @Query("SELECT c FROM Course c WHERE c.category.categoryId = :categoryId")
     List<Course> findByCategory(@Param("categoryId") String categoryId);
 
     @Query("SELECT c FROM Course c WHERE c.status <> 2")

@@ -13,9 +13,9 @@ public class Quiz {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "quiz_id")
-    private Integer id; // Changed to Long to match the GenerationType.IDENTITY
+    private Integer id;
 
-    @Column(name = "title", nullable = false) // Added nullable = false to enforce non-null title
+    @Column(name = "title", nullable = false)
     private String title;
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
