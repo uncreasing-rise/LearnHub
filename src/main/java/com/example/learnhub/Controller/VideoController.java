@@ -1,71 +1,49 @@
 package com.example.learnhub.Controller;
 
-import com.example.learnhub.DTO.VideoDTO;
-import com.example.learnhub.Entity.Section;
 import com.example.learnhub.Entity.Video;
-import com.example.learnhub.InterfaceOfControllers.InterfaceOfVideoController;
-import com.example.learnhub.Repository.VideoRepository;
-//import com.example.learnhub.Service.ServiceOfFile;
 import com.example.learnhub.Service.ServiceOfVideo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+import java.util.Optional;
 
-public class VideoController implements InterfaceOfVideoController {
-    Path staticPath = Paths.get("static");
-    Path videoPath = Paths.get("videos");
+@RestController
+@RequestMapping("/videos")
+public class VideoController {
 
-    VideoRepository videoRepository;
+    private final ServiceOfVideo videoService;
 
-//    ServiceOfFile serviceOfFile;
-
-    ServiceOfVideo serviceOfVideo;
-
-
-    public VideoDTO fromVideoIntoResponeVideoDTO(Video video) {
-
-        VideoDTO videoDTO = new VideoDTO();
-        videoDTO.setVideoId(video.getVideoId());
-        videoDTO.setVideoData(video.getVideoData());
-        videoDTO.setVideoScript(video.getVideoScript());
-        videoDTO.setSectionID(video.getSectionID());
-        videoDTO.setIsTrial(video.getIsTrial());
-
-        return videoDTO;
-    }
-    private static final Path CURRENT_FOLDER = Paths.get(System.getProperty("user.dir"));
-
-
-
-    @Override
-    public VideoDTO createNewVideo(String name, MultipartFile data, String script, boolean isTrial, Section section) throws IOException {
-        return null;
+    @Autowired
+    public VideoController(ServiceOfVideo videoService) {
+        this.videoService = videoService;
     }
 
-    @Override
-    public List<VideoDTO> findAllVideoBySectionID() {
-        return null;
+    @PostMapping("/create")
+    public ResponseEntity<Video> createVideo(@RequestBody Video video) {
+        Video createdVideo = videoService.createVideo(video);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdVideo);
     }
 
-    @Override
-    public VideoDTO findVideoByID() {
-        return null;
+    @GetMapping("/{id}")
+    public ResponseEntity<Video> getVideoById(@PathVariable("id") Integer id) {
+        Optional<Video> video = videoService.findVideoById(id);
+        return video.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @Override
-    public List<VideoDTO> findAllVideos() {
-        return null;
+    @PutMapping("/{id}")
+    public ResponseEntity<Video> updateVideo(@PathVariable("id") Integer id, @RequestBody Video updatedVideo) {
+        Video video = videoService.updateVideo(id, updatedVideo);
+        return video != null ? ResponseEntity.ok(video) : ResponseEntity.notFound().build();
     }
 
-    @Override
-    public int deleteVideo(int id) {
-        //moi sua
-        int delete = videoRepository.deleteVideo(id);
-        return delete;
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteVideo(@PathVariable("id") Integer id) {
+        videoService.deleteVideo(id);
+        return ResponseEntity.noContent().build();
     }
+
+    // Add more endpoints as needed
 }

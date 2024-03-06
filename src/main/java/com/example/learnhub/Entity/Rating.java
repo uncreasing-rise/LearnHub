@@ -2,7 +2,7 @@ package com.example.learnhub.Entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
@@ -11,21 +11,20 @@ import java.util.Date;
 public class Rating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "RatingID")
+    @Column(name = "rating_id")
     private Integer ratingId;
 
-    @Column(name = "RatingValue")
-    private Integer ratingValue;
+    @Column(name = "rating_value")
+    private Integer ratingValue; // Rating value from 1 to 5
 
     @ManyToOne
-    @JoinColumn(name = "CourseID")
+    @JoinColumn(name = "course_id")
     private Course course;
 
     @ManyToOne
-    @JoinColumn(name = "UserID")
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(name = "RatingTime")
-    private Date ratingTime;
-
+    @Column(name = "rating_time")
+    private Date ratingTime; // Use LocalDate for better date handling
 }

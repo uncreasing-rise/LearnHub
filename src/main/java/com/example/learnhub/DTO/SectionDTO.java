@@ -5,7 +5,7 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
-@Data
+@   Data
 public class SectionDTO {
     private Integer sectionId;
     private String sectionName;

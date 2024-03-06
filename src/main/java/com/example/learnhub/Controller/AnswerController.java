@@ -5,10 +5,9 @@ import com.example.learnhub.Service.ServiceOfAnswer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/answers")
@@ -30,9 +29,33 @@ public class AnswerController {
         }
     }
 
-    // Other endpoints for retrieving, updating, and deleting answers
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getAnswerById(@PathVariable("id") Integer id) {
+        try {
+            AnswerDTO answerDTO = serviceOfAnswer.getAnswerById(id);
+            return ResponseEntity.ok(answerDTO);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Answer not found for id: " + id);
+        }
+    }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateAnswer(@PathVariable("id") Integer id, @RequestBody AnswerDTO answerDTO) {
+        try {
+            AnswerDTO updatedAnswer = serviceOfAnswer.updateAnswer(id, answerDTO);
+            return ResponseEntity.ok(updatedAnswer);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to update answer: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAnswer(@PathVariable("id") Integer id) {
+        try {
+            serviceOfAnswer.deleteAnswer(id);
+            return ResponseEntity.ok("Answer deleted successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Answer not found for id: " + id);
+        }
+    }
 }
-
- 
-
