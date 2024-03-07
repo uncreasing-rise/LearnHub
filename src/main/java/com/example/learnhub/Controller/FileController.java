@@ -32,10 +32,11 @@ public class FileController {
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
-            // Call uploadFile method from fileService
-            fileService.uploadFile(file);
+            // Call uploadFile method from fileService and retrieve the URL
+            String fileUrl = fileService.uploadFile(file);
 
-            return ResponseEntity.ok("File uploaded successfully");
+            // Return the URL in the response
+            return ResponseEntity.ok("File uploaded successfully. URL: " + fileUrl);
         } catch (IOException e) {
             // Handle file upload failure
             e.printStackTrace(); // Print stack trace for debugging
@@ -43,7 +44,6 @@ public class FileController {
                     .body("Failed to upload file: " + e.getMessage());
         }
     }
-
     //Delete file
     @DeleteMapping("delete")
     public ResponseEntity<String> deleteFile(

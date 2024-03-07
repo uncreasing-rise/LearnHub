@@ -1,7 +1,11 @@
 package com.example.learnhub.DTO;
 
 import com.example.learnhub.Entity.Category;
+import com.example.learnhub.Entity.LearningDetail;
+import com.example.learnhub.Entity.Rating;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,14 +20,17 @@ public class CourseDTO {
     private Category category;
     private Boolean isPassed;
     private Date courseDate;
-    private Integer ratingId;
+    private List<Rating> ratings;
     private String level;
     private String tag;
     private Integer userId;
+    @Setter
     private LearningDetailDTO learningDetail;
     private ImageDTO image;  // Added ImageDTO field
     private Integer status;
     private List<SectionDTO> sections = new ArrayList<>();
-
+    private double avgRating;
     // Constructors, getters, and setters can be generated using Lombok
+    private int countRating;
+
 }
