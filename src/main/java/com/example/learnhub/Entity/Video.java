@@ -28,5 +28,5 @@ public class Video {
     private Boolean isTrial;
 
     @Column(name = "SectionID")
-    private Integer sectionID;
+    private Section section;
 }

@@ -2,6 +2,7 @@
 
 package com.example.learnhub.Controller;
 
+import com.example.learnhub.DTO.QuizDTO;
 import com.example.learnhub.DTO.SectionDTO;
 import com.example.learnhub.Entity.Section;
 import com.example.learnhub.Service.ServiceOfFile;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/sections")
@@ -26,40 +29,44 @@ public class SectionController {
         this.serviceOfFile = serviceOfFile;
         this.sectionService = sectionService;
     }
+    // In SectionController.java
     @PostMapping("/create")
     public ResponseEntity<String> createSection(
-            @RequestParam(value = "videoFile", required = false) MultipartFile videoFile,
-            @RequestParam(value = "articleFile", required = false) MultipartFile articleFile,
-            @RequestParam("sectionName") String sectionName) {
+            @RequestParam(value = "videoFiles", required = false) List<MultipartFile> videoFiles,
+            @RequestParam(value = "articleFiles", required = false) List<MultipartFile> articleFiles,
+            @RequestParam("sectionName") String sectionName,
+            @RequestBody(required = false) QuizDTO quizDTO) { // Add QuizDTO parameter
         try {
             // Check if both video and article files are not provided
-            if ((videoFile == null || videoFile.isEmpty()) && (articleFile == null || articleFile.isEmpty())) {
-                return ResponseEntity.badRequest().body("At least one of video or article files is required");
+            if ((videoFiles == null || videoFiles.isEmpty()) && (articleFiles == null || articleFiles.isEmpty()) && quizDTO == null) {
+                return ResponseEntity.badRequest().body("At least one of video, article files, or a quiz is required");
             }
 
-            // Upload video file to GCS if provided
-            String videoUploadedFilePath = null;
-            if (videoFile != null && !videoFile.isEmpty()) {
-                serviceOfFile.uploadFile(videoFile);
-                videoUploadedFilePath = serviceOfFile.constructFileUrl(videoFile.getOriginalFilename());
+            // Upload video files to GCS if provided
+            List<String> videoUploadedFilePaths = new ArrayList<>();
+            if (videoFiles != null && !videoFiles.isEmpty()) {
+                for (MultipartFile videoFile : videoFiles) {
+                    serviceOfFile.uploadFile(videoFile);
+                    videoUploadedFilePaths.add(serviceOfFile.constructFileUrl(videoFile.getOriginalFilename()));
+                }
             }
 
-            // Upload article file to GCS if provided
-            String articleUploadedFilePath = null;
-            if (articleFile != null && !articleFile.isEmpty()) {
-                serviceOfFile.uploadFile(articleFile);
-                articleUploadedFilePath = serviceOfFile.constructFileUrl(articleFile.getOriginalFilename());
+            // Upload article files to GCS if provided
+            List<String> articleUploadedFilePaths = new ArrayList<>();
+            if (articleFiles != null && !articleFiles.isEmpty()) {
+                for (MultipartFile articleFile : articleFiles) {
+                    serviceOfFile.uploadFile(articleFile);
+                    articleUploadedFilePaths.add(serviceOfFile.constructFileUrl(articleFile.getOriginalFilename()));
+                }
             }
 
             // Create Section entity
             Section section = new Section();
             section.setSectionName(sectionName);
-            section.setVideoPath(videoUploadedFilePath);
-            section.setArticlePath(articleUploadedFilePath);
             // Set other properties of Section as needed
 
             // Save the Section entity
-            sectionService.createSection(section, null, null); // Pass null for videoFiles and articleFiles
+            sectionService.createSection(section, videoFiles, articleFiles, quizDTO); // Pass quizDTO to the service
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body("Section created successfully with Video and Article uploaded to GCS");
@@ -69,6 +76,7 @@ public class SectionController {
                     .body("Failed to upload file to GCS: " + e.getMessage());
         }
     }
+
 
 
 
