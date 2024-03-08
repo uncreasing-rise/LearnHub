@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 @Service
 public class ServiceOfAnswer implements IServiceOfAnswer {
-
     private final AnswerRepository answerRepository;
 
     @Autowired
@@ -18,25 +19,23 @@ public class ServiceOfAnswer implements IServiceOfAnswer {
         this.answerRepository = answerRepository;
     }
 
-    // Existing methods (e.g., updateAnswer, deleteAnswer, getAnswerById, getAllAnswers)
-
     @Override
     public Answer getAnswerById(int id, Question question) {
-        return null;
+        return answerRepository.findByIdAndQuestion(id, question);
     }
 
-    @Override
     @Transactional
-    public Answer createAnswer(AnswerDTO answerDTO) {
-        Answer answer = convertToAnswerEntity(answerDTO);
-        return answerRepository.save(answer);
-    }
+    public List<Answer> convertToAnswerEntities(List<AnswerDTO> answerDTOS, Question question) {
+        List<Answer> answers = new ArrayList<>();
 
-    private Answer convertToAnswerEntity(AnswerDTO answerDTO) {
-        // Implement logic to map answerDTO properties to an Answer object
-        Answer answer = new Answer();
-        answer.setText(answerDTO.getAnswerText());
-        answer.setCorrect(answerDTO.getIsCorrect());
-        answer.setQuestion(answerDTO.getQuestion());        return answer;
+        for (AnswerDTO answerDTO : answerDTOS) {
+            Answer answer = new Answer();
+            answer.setText(answerDTO.getAnswerText());
+            answer.setCorrect(answerDTO.getIsCorrect());
+            answer.setQuestion(question);
+            answers.add(answer);
+        }
+
+        return answerRepository.saveAll(answers);
     }
 }

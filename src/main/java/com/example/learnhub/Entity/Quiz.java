@@ -18,11 +18,12 @@ public class Quiz {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Question> questions = new ArrayList<>();
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
+    private List<Question> questions;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sectionId")
+    @JoinColumn(name = "section_id")
     private Section section;
+
     // Constructors, getters, and setters
 }

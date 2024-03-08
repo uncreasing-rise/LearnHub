@@ -10,4 +10,5 @@ public interface AnswerRepository extends JpaRepository<Answer, Integer> {
 
     void deleteAllByQuestion(Question question); // Corrected method
 
+    Answer findByIdAndQuestion(int id, Question question);
 }

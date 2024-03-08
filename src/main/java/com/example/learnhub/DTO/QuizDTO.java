@@ -11,4 +11,6 @@ public class QuizDTO {
     private String quizTitle;
     private String quizDescription;
     private List<QuestionDTO> questions;
+    private SectionDTO sectionDTO;
+
 }

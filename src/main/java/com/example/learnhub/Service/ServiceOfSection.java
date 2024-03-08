@@ -3,28 +3,23 @@ package com.example.learnhub.Service;
 import com.example.learnhub.DTO.*;
 import com.example.learnhub.Entity.*;
 import com.example.learnhub.Exceptions.AppServiceExeption;
-import com.example.learnhub.Repository.QuizRepository;
 import com.example.learnhub.Repository.SectionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import javax.transaction.Transactional;
-import java.util.Collection;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.List;
 
 @Service
 public class ServiceOfSection {
-    private final QuizRepository quỉzRepository;
     private final SectionRepository sectionRepository;
     private final ServiceOfVideo serviceOfVideo;
     private final ServiceOfArticle serviceOfArticle;
     private final ServiceOfQuiz serviceOfQuiz;
 
+
     @Autowired
-    public ServiceOfSection(QuizRepository quỉzRepository, SectionRepository sectionRepository, ServiceOfVideo serviceOfVideo, ServiceOfArticle serviceOfArticle, ServiceOfQuiz serviceOfQuiz) {
-        this.quỉzRepository = quỉzRepository;
+    public ServiceOfSection(SectionRepository sectionRepository, ServiceOfVideo serviceOfVideo, ServiceOfArticle serviceOfArticle, ServiceOfQuiz serviceOfQuiz) {
         this.sectionRepository = sectionRepository;
         this.serviceOfVideo = serviceOfVideo;
         this.serviceOfArticle = serviceOfArticle;
@@ -38,47 +33,34 @@ public class ServiceOfSection {
         sectionDTO.setCourse(section.getCourse());
         return sectionDTO;
     }
-    public Section createSection(SectionDTO dto, Course course) throws AppServiceExeption {
+    public Section createSection(SectionDTO dto, Course course, List<MultipartFile> articleFiles, List<MultipartFile> videoFiles) throws AppServiceExeption, IOException {
         Section section = new Section();
         section.setSectionName(dto.getSectionName());
         section.setCourse(course);
-        return sectionRepository.save(section);
-    }
-    @Transactional
-    public void createSection(Section section, List<MultipartFile> videoFiles, List<MultipartFile> articleFiles, QuizDTO quizDTO) {
-        if (videoFiles == null && articleFiles == null && quizDTO == null) {
-            throw new IllegalArgumentException("At least one of video files, article files, or a quiz must be provided.");
-        }
-
-        if (videoFiles != null && !videoFiles.isEmpty()) {
-            serviceOfVideo.createVideos(section, videoFiles);
-        }
-
-        if (articleFiles != null && !articleFiles.isEmpty()) {
-            serviceOfArticle.createArticles(section, articleFiles);
-        }
-
-        // Set the courseId for the section
-        section.setCourse(section.getCourse());
-
-        // Save the section entity
         sectionRepository.save(section);
 
-        // Create quiz if quizDTO is provided
-        if (quizDTO != null) {
-            // Create quiz associated with this section
-            Quiz quiz = serviceOfQuiz.createQuiz(quizDTO);
-            // Set the section for the quiz
-            quiz.setSection(section);
-            // Save the quiz entity
-            quỉzRepository.save(quiz);
-        }
+        // Create articles associated with the section
+        List<Article> articles = serviceOfArticle.createArticles(section, articleFiles, dto.getArticles());
+
+
+        // Create videos associated with the section
+        List<Video> videos = serviceOfVideo.createVideos(section, videoFiles, dto.getVideos());
+
+        // Create quiz asscociated with the section
+        List<Quiz> quizzes = serviceOfQuiz.createQuizzes(section, dto.getQuizzes());
+
+        // Set created articles and videos for the section
+        section.setArticles(articles);
+        section.setVideos(videos);
+        section.setQuizzes(quizzes);
+
+        return sectionRepository.save(section);
     }
 
 
     public List<Section> getSectionList(Course course) {
-        List<Section> sectionList = sectionRepository.findByCourse_CourseId(course.getCourseId());
-        return sectionList;
+        return sectionRepository.findByCourse_CourseId(course.getCourseId());
     }
+
 
 }
