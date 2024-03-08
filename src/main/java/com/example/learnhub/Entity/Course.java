@@ -27,8 +27,6 @@ public class Course {
     @Column(name = "CoursePrice")
     private Double coursePrice;
 
-
-
     @Column(name = "IsPassed")
     private Boolean isPassed;
 
@@ -48,8 +46,8 @@ public class Course {
     @Column(name = "UserID")
     private Integer userId;
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images;
+    @Column(name = "ImageURL")
+    private String imageUrl;
 
     @Column(name = "Status")
     private Integer status = 0;
@@ -58,12 +56,11 @@ public class Course {
     private List<Section> sections = new ArrayList<>();
 
     @ManyToOne
-    @JoinColumn(name = "CategoryID") // Adjusted, insertable and updatable removed
+    @JoinColumn(name = "CategoryID")
     private Category category;
 
     @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private LearningDetail learningDetail;
-
 
     @ManyToMany
     @JoinTable(
