@@ -27,7 +27,8 @@ public enum ErrorMessage {
     USER_ROLE_NOT_FOUND("User role not found"),
     USER_DISABLED("User disabled"),
     USER_RESTORE_FAILED("User restore failed"),
-    USER_DISABLED_FAILED("User disable failed")
+    USER_DISABLED_FAILED("User disable failed"),
+    USER_UPLOAD_AVATAR_FAILED("User upload avatar failed")
 
 
     ;

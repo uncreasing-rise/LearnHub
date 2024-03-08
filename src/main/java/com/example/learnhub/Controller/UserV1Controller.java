@@ -14,6 +14,7 @@ import com.example.learnhub.Exceptions.BusinessException;
 import com.example.learnhub.Exceptions.UnauthorizeException;
 import com.example.learnhub.Repository.RoleRepository;
 import com.example.learnhub.Repository.UserRepository;
+import com.example.learnhub.Service.ServiceOfFile;
 import com.example.learnhub.mailv2.model.Mail;
 import com.example.learnhub.mailv2.service.EmailSenderService;
 import com.example.learnhub.security.UserDetailsImpl;
@@ -30,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -51,6 +53,10 @@ public class UserV1Controller {
 
     @Autowired
     private EmailSenderService emailSenderService;
+
+
+    @Autowired
+    private ServiceOfFile fileService;
 
     @Value("${aes.key}")
     private String key;
@@ -526,6 +532,31 @@ public class UserV1Controller {
             throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
         }
         return userList.get(0);
+    }
+
+
+    @PutMapping("/v1/avatar")
+    ResponseEntity<ApiResponse<Object>> uploadAvatar(Principal principal, @RequestParam("file") MultipartFile file) {
+        try {
+            User user = getUserAvailable(principal.getName(), false);
+            if(!user.getImage().equals("url")){
+                try {
+                    fileService.deleteFile(user.getImage());
+                } catch (Exception e){
+                    log.error("Can not delete file: {}" , user.getImage());
+                }
+            }
+            fileService.uploadFile(file);
+            user.setImage(file.getOriginalFilename());
+            userRepository.save(user);
+            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(user.getImage()),HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("Upload avatar failed with error {}", e.getLocalizedMessage());
+            throw new BusinessException(ErrorMessage.USER_UPLOAD_AVATAR_FAILED);
+        }
     }
 
 }
