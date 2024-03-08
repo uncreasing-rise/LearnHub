@@ -15,9 +15,6 @@ public class Image {
     @Column(name = "ImageURL")
     private String imageUrl;
 
-    @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
 
 
     // Constructors, getters, setters, and other methods as needed
