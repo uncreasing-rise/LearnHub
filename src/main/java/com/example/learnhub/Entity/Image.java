@@ -15,7 +15,5 @@ public class Image {
     @Column(name = "ImageURL")
     private String imageUrl;
 
-
-
     // Constructors, getters, setters, and other methods as needed
 }

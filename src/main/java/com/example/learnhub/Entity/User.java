@@ -23,8 +23,8 @@ public class User {
     @Column(nullable = false, name = "UserPassword")
     private String userPassword;
 
-    @Column(nullable = false, name = "Image", columnDefinition = "nvarchar(max)")
-    private String image;
+    @Column(name = "ImageURL")
+    private String image;  // Representing image as a URL string
 
     @Column(nullable = false, name = "Facebook", columnDefinition = "nvarchar(max)")
     private String facebook;
