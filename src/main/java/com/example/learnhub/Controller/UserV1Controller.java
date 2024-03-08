@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/user")
 @Slf4j
+@CrossOrigin("*")
 public class UserV1Controller {
 
     @Autowired
