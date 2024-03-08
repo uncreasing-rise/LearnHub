@@ -22,8 +22,8 @@ public class ServiceOfLearningDetail {
         learningDetail.setBenefit(learningDetailDTO.getBenefit());
         learningDetail.setObjective(learningDetailDTO.getObjective());
         learningDetail.setCourse(course); // Associate the learning detail with the course
+
         // Save the learning detail to the database
-        learningDetailRepository.save(learningDetail);
     return learningDetailRepository.save(learningDetail);
     }
 

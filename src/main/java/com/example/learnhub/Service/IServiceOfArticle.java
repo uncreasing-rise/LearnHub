@@ -1,5 +1,6 @@
 package com.example.learnhub.Service;
 
+import com.example.learnhub.DTO.ArticleDTO;
 import com.example.learnhub.Entity.Article;
 import com.example.learnhub.Entity.Section;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,5 +16,4 @@ public interface IServiceOfArticle {
 
     void deleteArticle(Integer id);
 
-    void createArticles(Section section, List<MultipartFile> articleFiles);
 }

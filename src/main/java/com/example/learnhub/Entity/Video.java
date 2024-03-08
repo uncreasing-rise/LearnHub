@@ -21,12 +21,10 @@ public class Video {
     @Column(name = "VideoData")
     private String videoData;
 
-    @Column(name = "VideoScript")
-    private String videoScript;
-
     @Column(name = "isTrial")
     private Boolean isTrial;
 
-    @Column(name = "SectionID")
+    @ManyToOne
+    @JoinColumn(name = "SectionID") // Many-to-One association with Section
     private Section section;
 }

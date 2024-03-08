@@ -28,14 +28,14 @@ public class QuestionController {
         this.questionRepository = questionRepository;
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<Question> createQuestion(@Valid @RequestBody QuestionDTO questionDTO) {
-        // Call the createQuestion method from questionService
-        Question createdQuestionDTO = questionService.createQuestion(questionDTO);
-
-        // Return the createdQuestionDTO in the response with HTTP status 201
-        return new ResponseEntity<>(createdQuestionDTO, HttpStatus.CREATED);
-    }
+//    @PostMapping("/add")
+//    public ResponseEntity<Question> createQuestion(@Valid @RequestBody QuestionDTO questionDTO) {
+//        // Call the createQuestion method from questionService
+//        Question createdQuestionDTO = questionService.createQuestion(questionDTO);
+//
+//        // Return the createdQuestionDTO in the response with HTTP status 201
+//        return new ResponseEntity<>(createdQuestionDTO, HttpStatus.CREATED);
+//    }
 
 
 

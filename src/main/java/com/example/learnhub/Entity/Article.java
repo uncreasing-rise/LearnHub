@@ -15,18 +15,10 @@ public class Article {
     @Column(name = "Title")
     private String title;
 
-    @Column(name = "Description")
-    private String description;
-
     @Column(name = "ArticleData")
-    private String articleData;
+    private String articleUrl; // Change type to String to store URL
 
-    @Column(name = "ArticleScript")
-    private String articleScript;
-
-    @Column(name = "isTrial")
-    private Boolean isTrial;
-
-    @Column(name = "SectionID")
-    private Integer sectionID;
+    @ManyToOne
+    @JoinColumn(name = "SectionID") // Many-to-One association with Section
+    private Section section;
 }

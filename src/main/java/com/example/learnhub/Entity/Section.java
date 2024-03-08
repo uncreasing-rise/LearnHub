@@ -3,6 +3,8 @@ package com.example.learnhub.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "Section")
@@ -15,11 +17,14 @@ public class Section {
     @Column(name = "SectionName")
     private String sectionName;
 
-    @Column(name = "VideoPath")
-    private String videoPath;
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL)
+    private List<Video> videos;
 
-    @Column(name = "ArticlePath")
-    private String articlePath;
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL)
+    private List<Article> articles;
+
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL)
+    private List<Quiz> quizzes;
 
     @ManyToOne
     @JoinColumn(name = "CourseID")

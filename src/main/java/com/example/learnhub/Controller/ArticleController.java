@@ -1,10 +1,8 @@
 package com.example.learnhub.Controller;
 
 import com.example.learnhub.Entity.Article;
-import com.example.learnhub.Entity.Video;
 import com.example.learnhub.Service.ServiceOfArticle;
 import com.example.learnhub.Service.ServiceOfFile;
-import com.example.learnhub.Service.ServiceOfVideo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,10 +28,7 @@ public class ArticleController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Article> createVideo(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("title") String title,
-            @RequestParam("description") String description) {
+    public ResponseEntity<Article> createVideo(@RequestParam("file") MultipartFile file, @RequestParam("title") String title) {
         // Check if file is provided
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(null);
@@ -48,8 +43,7 @@ public class ArticleController {
             // Create Video entity
             Article article = new Article();
             article.setTitle(title);
-            article.setDescription(description);
-            article.setArticleData(gcsPath); // Set GCS URI as video data
+            article.setArticleUrl(gcsPath); // Set GCS URI as video data
 
             // Save the Video entity
             Article createdArticle = articleService.createArticle(article);
@@ -57,8 +51,7 @@ public class ArticleController {
             return ResponseEntity.status(HttpStatus.CREATED).body(createdArticle);
         } catch (IOException e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null); // Return null or handle the error appropriately
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Return null or handle the error appropriately
         }
     }
 }

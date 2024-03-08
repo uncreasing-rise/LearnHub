@@ -62,7 +62,7 @@ public class ServiceOfFile implements IServiceOfFile {
         Blob blob = storage.create(blobInfo, file.getBytes());
 
         // Trả về đường link của tập tin đã tải lên
-        return "https://storage.googleapis.com/" + bucketName + "/" + file.getOriginalFilename();
+        return file.getOriginalFilename();
     }
 
     @Override

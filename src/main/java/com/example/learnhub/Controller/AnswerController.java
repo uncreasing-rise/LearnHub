@@ -26,24 +26,24 @@ public class AnswerController {
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
     }
-
-    @PostMapping("/")
-    public ResponseEntity<?> createAnswer(@RequestBody AnswerDTO answerDTO, @RequestParam Integer questionId) {
-        try {
-            // Fetch the question from the database using the provided questionId
-            Question question = questionRepository.findById(questionId)
-                    .orElseThrow(() -> new EntityNotFoundException("Question not found for id: " + questionId));
-
-            // Add the answer, providing the answerDTO and the associated question
-            serviceOfAnswer.createAnswer(answerDTO);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body("Answer created successfully");
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Question not found for id: " + questionId);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create answer: " + e.getMessage());
-        }
-    }
+//
+//    @PostMapping("/")
+//    public ResponseEntity<?> createAnswer(@RequestBody AnswerDTO answerDTO, @RequestParam Integer questionId) {
+//        try {
+//            // Fetch the question from the database using the provided questionId
+//            Question question = questionRepository.findById(questionId)
+//                    .orElseThrow(() -> new EntityNotFoundException("Question not found for id: " + questionId));
+//
+//            // Add the answer, providing the answerDTO and the associated question
+//            serviceOfAnswer.createAnswer(answerDTO);
+//
+//            return ResponseEntity.status(HttpStatus.CREATED).body("Answer created successfully");
+//        } catch (EntityNotFoundException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Question not found for id: " + questionId);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create answer: " + e.getMessage());
+//        }
+//    }
 
 
     @PutMapping("/{id}")
