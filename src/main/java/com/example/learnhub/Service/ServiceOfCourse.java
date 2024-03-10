@@ -2,15 +2,14 @@ package com.example.learnhub.Service;
 
 import com.example.learnhub.DTO.*;
 import com.example.learnhub.Entity.*;
+import com.example.learnhub.Exceptions.CourseNotFoundException;
 import com.example.learnhub.Repository.CourseRateRepository;
 import com.example.learnhub.Repository.CourseRepository;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -100,39 +99,12 @@ public class ServiceOfCourse {
 
 
 
-    private List<SectionDTO> mapSectionEntitiesToDTOs(List<Section> sections) {
-        return sections.stream()
-                .map(this::mapSectionEntityToDTO)
-                .collect(Collectors.toList());
-    }
-
-    private LearningDetailDTO mapLearningDetailEntityToDTO(LearningDetail learningDetails) {
-        if (learningDetails == null) {
-            return null;
-        }
-
-        LearningDetailDTO learningDetailDTO = new LearningDetailDTO();
-        learningDetailDTO.setLearningDetailId(learningDetails.getLearningDetailId());
-
-        if (learningDetails.getCourse() != null) {
-            learningDetailDTO.setCourseId(learningDetails.getCourse().getCourseId());
-        }
-
-        learningDetailDTO.setBenefit(learningDetails.getBenefit());
-        learningDetailDTO.setObjective(learningDetails.getObjective());
-
-        return learningDetailDTO;
-    }
 
 
 
-    private SectionDTO mapSectionEntityToDTO(Section section) {
-        SectionDTO sectionDTO = new SectionDTO();
-        sectionDTO.setSectionId(section.getSectionId());
-        sectionDTO.setSectionName(section.getSectionName());
-        sectionDTO.setCourse(section.getCourse());
-        return sectionDTO;
-    }
+
+
+
 
     public CourseDTO showSectionAndVideo(@RequestParam int id) {
         Course course = courseRepository.findById(id);
@@ -141,7 +113,6 @@ public class ServiceOfCourse {
 
     public CourseDTO fromCourseToCourseDTO(Course course) {
         CourseDTO courseDTO = new CourseDTO();
-
         courseDTO.setCourseID(course.getCourseId());
         courseDTO.setCourseTitle(course.getCourseTitle());
         courseDTO.setCourseDes(course.getCourseDes());
@@ -153,17 +124,83 @@ public class ServiceOfCourse {
         courseDTO.setLevel(course.getLevel());
         courseDTO.setTag(course.getTag());
         courseDTO.setUserId(course.getUserId());
-        courseDTO.setSections(serviceOfSection.getSectionList(course).stream().map(section -> serviceOfSection.fromSectionToSectionDTO(section)).toList());
+        courseDTO.setSections(serviceOfSection.getSectionList(course).stream().map(serviceOfSection::fromSectionToSectionDTO).toList());
         courseDTO.setCountRating(courseRateRepository.countCourseRateByCourseId(course.getCourseId()));
         Double avgRating = courseRateRepository.avgCourseRateByCourseId(course.getCourseId());
         courseDTO.setAvgRating(avgRating != null ? avgRating : 0.0);
-//        courseDTO.setAvgRating(0);
-
         courseDTO.setLearningDetail(serviceOfLearningDetail.getLearningDetailByCourseId(course.getCourseId()));
-
         courseDTO.setStatus(course.getStatus());
-
         return courseDTO;
     }
 
+    public ResponeCourseDTO fromCourseToResponeCourseDTO(Course course) {
+        ResponeCourseDTO courseDTO = new ResponeCourseDTO();
+        courseDTO.setCourseID(course.getCourseId());
+        courseDTO.setCourseTitle(course.getCourseTitle());
+        courseDTO.setCourseDes(course.getCourseDes());
+        courseDTO.setCoursePrice(course.getCoursePrice());
+        courseDTO.setCategory(course.getCategory());
+        courseDTO.setIsPassed(course.getIsPassed());
+        courseDTO.setCourseDate(course.getCourseDate());
+        courseDTO.setCoursePrice(course.getCoursePrice());
+        courseDTO.setLevel(course.getLevel());
+        courseDTO.setTag(course.getTag());
+        courseDTO.setUserId(course.getUserId());
+        courseDTO.setSections(serviceOfSection.getSectionList(course).stream().map(serviceOfSection::fromSectionToResponeSectionDTO).toList());
+        courseDTO.setCountRating(courseRateRepository.countCourseRateByCourseId(course.getCourseId()));
+        Double avgRating = courseRateRepository.avgCourseRateByCourseId(course.getCourseId());
+        courseDTO.setAvgRating(avgRating != null ? avgRating : 0.0);
+        courseDTO.setLearningDetail(serviceOfLearningDetail.getLearningDetailByCourseId(course.getCourseId()));
+        courseDTO.setStatus(course.getStatus());
+        return courseDTO;
+    }
+    public ResponeCourseDTO updateCourse(Integer courseId, CourseDTO updatedCourseDTO) throws CourseNotFoundException {
+        // Retrieve the existing course from the database
+        Course existingCourse = courseRepository.findById(courseId)
+                .orElseThrow(() -> new CourseNotFoundException(courseId));
+
+        // Update the existing course with the new data
+        existingCourse.setCourseTitle(updatedCourseDTO.getCourseTitle());
+        existingCourse.setCourseDes(updatedCourseDTO.getCourseDes());
+        existingCourse.setCoursePrice(updatedCourseDTO.getCoursePrice());
+        existingCourse.setCategory(updatedCourseDTO.getCategory());
+        existingCourse.setIsPassed(updatedCourseDTO.getIsPassed());
+        existingCourse.setCourseDate(updatedCourseDTO.getCourseDate());
+        existingCourse.setLevel(updatedCourseDTO.getLevel());
+        existingCourse.setTag(updatedCourseDTO.getTag());
+        existingCourse.setUserId(updatedCourseDTO.getUserId());
+        existingCourse.setStatus(updatedCourseDTO.getStatus());
+        updateSections(existingCourse, updatedCourseDTO.getSections1());
+        // Save the updated course to the database
+        Course updatedCourse = courseRepository.save(existingCourse);
+        // Convert the updated course to ResponeCourseDTO and return
+        return fromCourseToResponeCourseDTO(updatedCourse);
+    }
+    private void updateSections(Course course, List<ResponeSectionDTO> updatedSectionsDTO) {
+        // Remove existing sections not present in the updatedSectionsDTO
+        List<Section> existingSections = course.getSections();
+        existingSections.removeIf(existingSection ->
+                updatedSectionsDTO.stream().noneMatch(updatedSection -> updatedSection.getSectionId().equals(existingSection.getSectionId())));
+        // Update or add sections from updatedSectionsDTO
+        for (ResponeSectionDTO updatedSectionDTO : updatedSectionsDTO) {
+            Section existingSection = existingSections.stream()
+                    .filter(section -> section.getSectionId().equals(updatedSectionDTO.getSectionId()))
+                    .findFirst().orElse(null);
+            if (existingSection != null) {
+                // Update existing section
+                existingSection.setSectionName(updatedSectionDTO.getSectionName());
+                existingSection.setQuizzes(updatedSectionDTO.getQuizzes());
+                existingSection.setArticles(updatedSectionDTO.getArticles());
+                existingSection.setVideos(updatedSectionDTO.getVideos());
+            } else {
+                // Add new section
+                Section newSection = new Section();
+                newSection.setSectionName(updatedSectionDTO.getSectionName());
+                newSection.setQuizzes(updatedSectionDTO.getQuizzes());
+                newSection.setVideos(updatedSectionDTO.getVideos());
+                newSection.setArticles(updatedSectionDTO.getArticles());
+                course.getSections().add(newSection);
+            }
+        }
+    }
 }

@@ -1,5 +1,7 @@
 package com.example.learnhub.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,6 +21,7 @@ public class Answer {
     private boolean correct;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "question_id")
     private Question question;
 

@@ -1,8 +1,12 @@
 package com.example.learnhub.DTO;
 
 import com.example.learnhub.Entity.Section;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class VideoDTO {
     private Integer videoId;

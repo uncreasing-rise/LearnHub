@@ -3,10 +3,13 @@
     import com.example.learnhub.Entity.Article;
     import com.example.learnhub.Entity.Course;
     import com.example.learnhub.Entity.Video;
+    import lombok.AllArgsConstructor;
     import lombok.Data;
+    import lombok.NoArgsConstructor;
     import org.springframework.web.multipart.MultipartFile;
     import java.util.List;
-
+    @AllArgsConstructor
+    @NoArgsConstructor
     @Data
     public class SectionDTO {
         private Integer sectionId;

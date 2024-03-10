@@ -1,5 +1,6 @@
 package com.example.learnhub.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,7 +13,7 @@ public class Comment {
     @Column(name = "CommentID")
     private Integer commentId;
 
-    @Column(name = "CommentText")
+    @Column(name = "comment_text")
     private String commentText;
 
     @ManyToOne

@@ -26,24 +26,7 @@ public class AnswerController {
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
     }
-//
-//    @PostMapping("/")
-//    public ResponseEntity<?> createAnswer(@RequestBody AnswerDTO answerDTO, @RequestParam Integer questionId) {
-//        try {
-//            // Fetch the question from the database using the provided questionId
-//            Question question = questionRepository.findById(questionId)
-//                    .orElseThrow(() -> new EntityNotFoundException("Question not found for id: " + questionId));
-//
-//            // Add the answer, providing the answerDTO and the associated question
-//            serviceOfAnswer.createAnswer(answerDTO);
-//
-//            return ResponseEntity.status(HttpStatus.CREATED).body("Answer created successfully");
-//        } catch (EntityNotFoundException e) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Question not found for id: " + questionId);
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create answer: " + e.getMessage());
-//        }
-//    }
+
 
 
     @PutMapping("/{id}")
@@ -57,9 +40,6 @@ public class AnswerController {
             existingAnswer.setText(answerDTO.getAnswerText());
             existingAnswer.setCorrect(answerDTO.getIsCorrect());
 
-            // If the association between Answer and Question needs to be updated,
-            // retrieve the Question object from the database and set it to the existingAnswer
-            // For now, I'll assume the association is not being updated, and you don't need to pass a Question object
 
             // Save the updated Answer
             answerRepository.save(existingAnswer);
@@ -71,14 +51,5 @@ public class AnswerController {
     }
 
 
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<?> deleteAnswer(@PathVariable("id") Integer id) {
-//        try {
-//            serviceOfAnswer.deleteAnswer(id); // Corrected method call
-//            return ResponseEntity.ok("Answer with id " + id + " deleted successfully");
-//        } catch (EntityNotFoundException e) { // Changed exception type to EntityNotFoundException
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Answer not found for id: " + id);
-//        }
-//    }
 
 }

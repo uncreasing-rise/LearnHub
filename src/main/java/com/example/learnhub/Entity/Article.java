@@ -1,5 +1,7 @@
 package com.example.learnhub.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,10 +17,11 @@ public class Article {
     @Column(name = "Title")
     private String title;
 
-    @Column(name = "ArticleData")
+    @Column(name = "article_data")
     private String articleUrl; // Change type to String to store URL
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "SectionID") // Many-to-One association with Section
     private Section section;
 }

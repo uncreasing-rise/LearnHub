@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class CourseDTO {
+public class ResponeCourseDTO {
     private Integer courseID;
     private String courseTitle;
     private String courseDes;
@@ -24,11 +24,10 @@ public class CourseDTO {
     private String tag;
     private Integer userId;
     private LearningDetailDTO learningDetail;
-    private ImageDTO image;
+    private ImageDTO image;  // Added ImageDTO field
     private Integer status;
-    private List<SectionDTO> sections = new ArrayList<>();
+    private List<ResponeSectionDTO> sections = new ArrayList<>();
     private double avgRating;
     private int countRating;
-    private List<ResponeSectionDTO> sections1 = new ArrayList<>();
 
 }

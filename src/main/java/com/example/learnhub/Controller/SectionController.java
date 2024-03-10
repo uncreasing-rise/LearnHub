@@ -30,35 +30,17 @@ public class SectionController {
         this.courseRepository = courseRepository;
         this.sectionService = sectionService;
     }
-
     @PostMapping("/create")
-    public ResponseEntity<String> createSection(
-            @RequestParam(value = "videoFiles", required = false) List<MultipartFile> videoFiles,
-            @RequestParam(value = "articleFiles", required = false) List<MultipartFile> articleFiles,
-            @RequestParam("Section") SectionDTO  sectionName,
-            @RequestParam("courseId") Integer courseId) {
+    public ResponseEntity<Section> createSection(@RequestBody SectionDTO dto,
+                                                 @RequestBody Course course,
+                                                 @RequestParam("articleFiles") List<MultipartFile> articleFiles,
+                                                 @RequestParam("videoFiles") List<MultipartFile> videoFiles) {
         try {
-            // Check if both video and article files are not provided
-            if ((videoFiles == null || videoFiles.isEmpty()) && (articleFiles == null || articleFiles.isEmpty())) {
-                return ResponseEntity.badRequest().body("At least one of video or article files is required");
-            }
-
-            // Retrieve the course by courseId
-            Course course = courseRepository.findById(courseId)
-                    .orElseThrow(ChangeSetPersister.NotFoundException::new);
-
-            // Create section
-            Section createdSection = sectionService.createSection(sectionName, course, videoFiles, articleFiles);
-
-            // Return success response
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body("Section created successfully with ID: " + createdSection.getSectionId());
+            Section createdSection = sectionService.createSection(dto, course, articleFiles, videoFiles);
+            return ResponseEntity.ok(createdSection);
         } catch (AppServiceExeption | IOException e) {
-            // Handle service exception
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to create section: " + e.getMessage());
-        } catch (ChangeSetPersister.NotFoundException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace(); // Log the exception
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

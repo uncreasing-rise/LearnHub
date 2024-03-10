@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 @Service
 public class ServiceOfVideo implements IServiceOfVideo {
 
@@ -106,4 +108,54 @@ public class ServiceOfVideo implements IServiceOfVideo {
 
         return null;
     }
+
+    public List<Video> updateVideos(Section section, List<MultipartFile> videoFiles, List<VideoDTO> videos) {
+        List<Video> currentVideos = section.getVideos();
+        List<Video> updatedVideos = new ArrayList<>();
+
+        try {
+            for (int i = 0; i < videos.size(); i++) {
+                VideoDTO videoDTO = videos.get(i);
+
+                // Check if the video DTO has an ID
+                if (videoDTO.getVideoId() != null) {
+                    // Find the corresponding video in the current videos list
+                    Optional<Video> optionalVideo = currentVideos.stream().filter(v -> v.getVideoId().equals(videoDTO.getVideoId())).findFirst();
+                    if (optionalVideo.isPresent()) {
+                        Video existingVideo = optionalVideo.get();
+                        // Update video information
+                        existingVideo.setTitle(videoDTO.getTitle());
+                        existingVideo.setDescription(videoDTO.getDescription());
+                        existingVideo.setIsTrial(videoDTO.getIsTrial());
+                        // Add the existing video to the updated videos list
+                        updatedVideos.add(existingVideo);
+                    }
+                } else {
+                    // If the video DTO does not have an ID, it means it's a new video
+                    MultipartFile videoFile = videoFiles.get(i);
+                    if (isVideoFile(videoFile)) {
+                        // Upload video file to GCS using ServiceOfFile
+                        String videoFilePath = serviceOfFile.uploadFile(videoFile);
+                        // Create Video entity
+                        Video newVideo = new Video();
+                        newVideo.setSection(section);
+                        newVideo.setVideoData(constructFileUrl(videoFilePath));
+                        newVideo.setTitle(videoDTO.getTitle());
+                        newVideo.setDescription(videoDTO.getDescription());
+                        newVideo.setIsTrial(videoDTO.getIsTrial());
+                        // Add the new video to the updated videos list
+                        updatedVideos.add(videoRepository.save(newVideo));
+                    } else {
+                        throw new IllegalArgumentException("File is not a valid video file");
+                    }
+                }
+            }
+        } catch (IOException e) {
+            // Handle upload failure
+            e.printStackTrace();
+        }
+        // Return the list of updated and new videos
+        return updatedVideos;
+    }
+
 }

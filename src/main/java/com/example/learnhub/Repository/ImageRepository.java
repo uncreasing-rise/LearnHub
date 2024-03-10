@@ -11,11 +11,4 @@ import org.springframework.stereotype.Repository;
 public interface ImageRepository extends JpaRepository<Image, Integer> {
 
 
-
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM Image i WHERE i. = ?1")
-    int deleteImageByCourseId(Integer courseId);
-
-
 }

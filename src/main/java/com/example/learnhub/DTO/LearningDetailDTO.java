@@ -1,8 +1,11 @@
 package com.example.learnhub.DTO;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Data
+@Data@AllArgsConstructor
+@NoArgsConstructor
 public class LearningDetailDTO {
     private Integer learningDetailId;
     private Integer courseId;

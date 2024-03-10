@@ -1,6 +1,7 @@
 package com.example.learnhub.Controller;
 
 import com.example.learnhub.DTO.CourseDTO;
+import com.example.learnhub.DTO.ResponeCourseDTO;
 import com.example.learnhub.DTO.SectionDTO;
 import com.example.learnhub.Entity.Course;
 import com.example.learnhub.Exceptions.AppServiceExeption;
@@ -66,9 +67,9 @@ public class CourseController {
     // API để thêm mới một khóa học
     @PostMapping("/addCourse")
     @ResponseStatus(HttpStatus.CREATED)
-    public CourseDTO createCourse(@RequestPart("courseDTO") @Valid CourseDTO courseDTO,
-                                  @RequestPart("articleFiles") List<MultipartFile> articleFiles,
-                                  @RequestPart("videoFiles") List<MultipartFile> videoFiles)
+    public ResponeCourseDTO createCourse(@RequestPart("courseDTO") @Valid CourseDTO courseDTO,
+                                         @RequestPart("articleFiles") List<MultipartFile> articleFiles,
+                                         @RequestPart("videoFiles") List<MultipartFile> videoFiles)
             throws AppServiceExeption, IOException {
         Course course = serviceOfCourse.createCourse(courseDTO);
 
@@ -79,85 +80,86 @@ public class CourseController {
 
         serviceOfLearningDetail.createLearningDetail(courseDTO.getLearningDetail(), course);
 
-        return serviceOfCourse.fromCourseToCourseDTO(course);
+        return serviceOfCourse.fromCourseToResponeCourseDTO(course);
     }
+
 
     // API để lấy tất cả các khóa học
     @GetMapping
-    public ResponseEntity<List<CourseDTO>> getAllCourses() {
+    public ResponseEntity<List<ResponeCourseDTO>> getAllCourses() {
         List<Course> courses = serviceOfCourse.getAllCourses();
-        List<CourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToCourseDTO)
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
 
     // API để lấy danh sách các khóa học chưa được phê duyệt
     @GetMapping("/unapproved")
-    public ResponseEntity<List<CourseDTO>> getUnapprovedCourses() {
+    public ResponseEntity<List<ResponeCourseDTO>> getUnapprovedCourses() {
         List<Course> unapprovedCourses = serviceOfCourse.getUnapprovedCourses();
-        List<CourseDTO> unapprovedCourseDTOs = unapprovedCourses.stream()
-                .map(serviceOfCourse::fromCourseToCourseDTO)
+        List<ResponeCourseDTO> unapprovedCourseDTOs = unapprovedCourses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(unapprovedCourseDTOs);
     }
 
     // API để tìm kiếm các khóa học theo từ khóa
     @GetMapping("/search")
-    public ResponseEntity<List<CourseDTO>> searchCoursesByKeyword(@RequestParam String keyword) {
+    public ResponseEntity<List<ResponeCourseDTO>> searchCoursesByKeyword(@RequestParam String keyword) {
         List<Course> courses = serviceOfCourse.findCoursesByKeyword(keyword);
-        List<CourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToCourseDTO)
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
 
     // API để lấy danh sách các khóa học theo danh mục
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<CourseDTO>> getCoursesByCategory(@PathVariable String category) {
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByCategory(@PathVariable String category) {
         List<Course> courses = serviceOfCourse.getCoursesByCategory(category);
-        List<CourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToCourseDTO)
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
 
     // API để lấy danh sách các khóa học theo giá cao hơn
     @GetMapping("/price/higher")
-    public ResponseEntity<List<CourseDTO>> getCoursesByPriceHigher() {
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByPriceHigher() {
         List<Course> courses = serviceOfCourse.getCoursesByPriceHigher();
-        List<CourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToCourseDTO)
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
 
     // API để lấy danh sách các khóa học theo giá thấp hơn
     @GetMapping("/price/lower")
-    public ResponseEntity<List<CourseDTO>> getCoursesByPriceLower() {
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByPriceLower() {
         List<Course> courses = serviceOfCourse.getCoursesByPriceLower();
-        List<CourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToCourseDTO)
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
 
     // API để lấy danh sách các khóa học theo ngày mới nhất
     @GetMapping("/date/new")
-    public ResponseEntity<List<CourseDTO>> getCoursesByDateNew() {
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByDateNew() {
         List<Course> courses = serviceOfCourse.getCoursesByDateNew();
-        List<CourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToCourseDTO)
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
 
     // API để lấy danh sách các khóa học theo ngày cũ nhất
     @GetMapping("/date/old")
-    public ResponseEntity<List<CourseDTO>> getCoursesByDateOld() {
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByDateOld() {
         List<Course> courses = serviceOfCourse.getCoursesByDateOld();
-        List<CourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToCourseDTO)
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
