@@ -475,6 +475,13 @@ public class UserV1Controller {
                 throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
             }
 
+
+            Role roleUserDisabled = roleRepository.findById(user.getRoleId()).orElse(null);
+
+            if(Objects.nonNull(roleUserDisabled) && roleUserDisabled.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_CAN_NOT_DELETE_ADMIN);
+            }
+
             user.setDeleted(true);
             user = userRepository.save(user);
             ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,roleRepository.findById(user.getRoleId()).orElse(null)));
