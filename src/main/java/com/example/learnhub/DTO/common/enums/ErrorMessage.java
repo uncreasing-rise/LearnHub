@@ -29,8 +29,9 @@ public enum ErrorMessage {
     USER_RESTORE_FAILED("User restore failed"),
     USER_DISABLED_FAILED("User disable failed"),
     USER_UPLOAD_AVATAR_FAILED("User upload avatar failed"),
-    USER_CAN_NOT_DELETE_ADMIN("User can not delete Admin")
-
+    USER_CAN_NOT_DELETE_ADMIN("User can not delete Admin"),
+    USER_REQUEST_CHANGE_EMAIL_FAIL("Request to change email failed"),
+    USER_REQUEST_INVALID("Request invalid"),
 
     ;
 

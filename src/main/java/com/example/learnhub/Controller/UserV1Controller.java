@@ -29,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -69,6 +68,8 @@ public class UserV1Controller {
     @Value("${spring.mail.username}")
     private String mailFrom;
 
+    record UserChange(String emailOrigin, String emailChange,String otp) {}
+    private static Map<String, UserChange> map = new HashMap<String, UserChange>();
 
     //TODO: Register
     @PostMapping("/v1/register")
@@ -609,5 +610,109 @@ public class UserV1Controller {
             throw new BusinessException(ErrorMessage.USER_CREATE_FAIL);
         }
     }
+
+
+
+    @PostMapping("/v1/changeEmail")
+    ResponseEntity<ApiResponse<CommonStatusResponse>> requestToChangeEmail(Principal principal, @Validated @RequestBody AdminRequestToChangeEmailRequest request) {
+        try {
+            User userRequest = getUserAvailable(principal.getName(), true);
+            if(Objects.isNull(userRequest)){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            Role role = roleRepository.findById(userRequest.getRoleId()).orElse(null);
+            if(Objects.isNull(role) || !role.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            User user = getUserAvailable(request.getEmailOrigin(),false);
+
+            User userChanged = getUserAvailable(request.getEmailChange(),true);
+            if(Objects.nonNull(userChanged)){
+                throw new BusinessException(ErrorMessage.USER_EMAIL_EXISTED);
+            }
+
+            String randomString = RandomStringGenerator.generateRandomString(6);
+
+
+            UserChange userChange = new UserChange(user.getEmail(), request.getEmailChange(),randomString);
+            map.put(request.getEmailChange(), userChange);
+
+
+            // send email:
+            log.info("START... Sending email");
+            Mail mail = new Mail();
+            mail.setFrom(mailFrom);//replace with your desired email
+            mail.setTo(request.getEmailChange());//replace with your desired email
+            mail.setSubject("Email verify Leanhub to change email !");
+            Map<String, Object> model = new HashMap<>();
+            model.put("otp_value", randomString);
+            mail.setPros(model);
+            mail.setTemplate("index");
+            emailSenderService.sendEmail(mail);
+            log.info("END... Email sent success");
+
+            ApiResponse<CommonStatusResponse> response = new ApiResponse<CommonStatusResponse>().ok(new CommonStatusResponse(true));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorMessage.USER_REQUEST_CHANGE_EMAIL_FAIL);
+        }
+    }
+
+
+
+    @PostMapping("/v1/verifyEmailChange")
+    ResponseEntity<ApiResponse<UserResponse>> verifyEmailChange(Principal principal, @Validated @RequestBody AdminVerifyEmailChangeRequest request) {
+        try {
+            User userRequest = getUserAvailable(principal.getName(), true);
+            if(Objects.isNull(userRequest)){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            Role role = roleRepository.findById(userRequest.getRoleId()).orElse(null);
+            if(Objects.isNull(role) || !role.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+
+            UserChange userChangeInMap = map.get(request.getEmailChange());
+            if(Objects.isNull(userChangeInMap)) {
+                throw new BusinessException(ErrorMessage.USER_REQUEST_INVALID);
+            }
+
+            User user = getUserAvailable(userChangeInMap.emailOrigin(),false);
+
+            User userChanged = getUserAvailable(userChangeInMap.emailChange(),true);
+
+            if(Objects.nonNull(userChanged)){
+                throw new BusinessException(ErrorMessage.USER_EMAIL_EXISTED);
+            }
+
+            if(!Objects.equals(userChangeInMap.otp(), request.getOtp())) {
+                throw new BusinessException(ErrorMessage.USER_OTP_NOT_MATCH);
+            }
+
+            assert user != null;
+            user.setEmail(request.getEmailChange());
+            user = userRepository.save(user);
+            Role roleUser = roleRepository.findById(user.getRoleId()).orElse(null);
+
+            map.remove(request.getEmailChange());
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,roleUser));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorMessage.USER_REQUEST_CHANGE_EMAIL_FAIL);
+        }
+    }
+
+
+
 
 }
