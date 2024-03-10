@@ -15,6 +15,7 @@ import com.example.learnhub.Exceptions.UnauthorizeException;
 import com.example.learnhub.Repository.RoleRepository;
 import com.example.learnhub.Repository.UserRepository;
 import com.example.learnhub.Service.ServiceOfFile;
+import com.example.learnhub.Service.ServiceOfImage;
 import com.example.learnhub.mailv2.model.Mail;
 import com.example.learnhub.mailv2.service.EmailSenderService;
 import com.example.learnhub.security.UserDetailsImpl;
@@ -58,6 +59,9 @@ public class UserV1Controller {
 
     @Autowired
     private ServiceOfFile fileService;
+
+    @Autowired
+    private ServiceOfImage serviceOfImage;
 
     @Value("${aes.key}")
     private String key;
@@ -547,10 +551,10 @@ public class UserV1Controller {
                     log.error("Can not delete file: {}" , user.getImage());
                 }
             }
-            fileService.uploadFile(file);
+            String url = serviceOfImage.saveImage(file);
             user.setImage(file.getOriginalFilename());
             userRepository.save(user);
-            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(user.getImage()),HttpStatus.OK);
+            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(url),HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
