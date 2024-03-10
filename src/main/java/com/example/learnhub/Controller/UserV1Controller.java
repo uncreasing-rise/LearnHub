@@ -568,4 +568,46 @@ public class UserV1Controller {
         }
     }
 
+
+    @PostMapping("/v1/addCourseManage")
+    ResponseEntity<ApiResponse<UserResponse>> addCourseManageUser(Principal principal, @RequestBody AdminAddCourseManagerRequest request) {
+        try {
+            User userRequest = getUserAvailable(principal.getName(), true);
+            if(Objects.isNull(userRequest)){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            Role role = roleRepository.findById(userRequest.getRoleId()).orElse(null);
+            if(Objects.isNull(role) || !role.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            User userCreated = getUserAvailable(request.getEmail(),true);
+            if(Objects.nonNull(userCreated)){
+                throw new BusinessException(ErrorMessage.USER_EMAIL_EXISTED);
+            }
+
+            List<Role> roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.COURSEMANAGER.name());
+
+            userCreated = new User()
+                    .setEmail(request.getEmail())
+                    .setFullName(request.getFullname())
+                    .setUserPassword(AESUtils.encrypt(request.getPassword(),key))
+                    .setRoleId(roles.get(0).getRoleId())
+                    .setEnable(Boolean.TRUE)
+                    .setImage("url")
+                    .setToken("token")
+                    .setDeleted(false)
+                    .setStringRandom("");
+            userCreated = userRepository.save(userCreated);
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(userCreated,roles.get(0)));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorMessage.USER_CREATE_FAIL);
+        }
+    }
+
 }
