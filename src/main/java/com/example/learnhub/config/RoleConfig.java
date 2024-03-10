@@ -64,7 +64,6 @@ public class RoleConfig {
                     user = new User()
                             .setEnable(true)
                             .setEmail("Admin@email.com")
-                            .setFacebook("facebook")
                             .setToken("token")
                             .setImage("url")
                             .setFullName("fullname")

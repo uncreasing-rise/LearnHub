@@ -27,8 +27,6 @@ public class User {
     @Column(name = "ImageURL")
     private String image;  // Representing image as a URL string
 
-    @Column(nullable = false, name = "Facebook", columnDefinition = "nvarchar(max)")
-    private String facebook;
 
     @Column(nullable = false, name = "Email", columnDefinition = "nvarchar(max)")
     private String email;
@@ -62,7 +60,6 @@ public class User {
         this.userId = userId;
         this.userPassword = userPassword;
         this.image = image;
-        this.facebook = facebook;
         this.email = email;
         this.fullName = fullName;
         this.token = token;

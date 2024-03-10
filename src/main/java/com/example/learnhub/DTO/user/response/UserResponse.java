@@ -20,7 +20,6 @@ public class UserResponse {
     private Integer id;
     private String email;
     private String fullname;
-    private String faccebook;
     private String image;
     private String role;
     private Boolean enable;
@@ -30,7 +29,6 @@ public class UserResponse {
         this.id = user.getUserId();
         this.email = user.getEmail();
         this.fullname = user.getFullName();
-        this.faccebook = user.getFacebook();
         this.image = Objects.equals("url", user.getImage()) ? user.getImage() : FileUtils.getFileUrl(user.getImage());
         this.role = role == null ? null : role.getRoleName();
         this.enable = user.getEnable();

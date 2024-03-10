@@ -95,7 +95,6 @@ public class UserV1Controller {
             String randomString = RandomStringGenerator.generateRandomString(6);
             user = new User()
                 .setEmail(request.getEmail())
-                .setFacebook(request.getFacebook())
                 .setFullName(request.getFullname())
                 .setUserPassword(AESUtils.encrypt(request.getPassword(),key))
                 .setRoleId(roles.get(0).getRoleId())
@@ -211,9 +210,7 @@ public class UserV1Controller {
                 userUpdate.setFullName(request.getFullname());
             }
 
-            if(StringUtils.isNotBlank(request.getFacebook())){
-                userUpdate.setFacebook(request.getFacebook());
-            }
+
 
             if(StringUtils.isNotBlank(request.getImage())){
                 userUpdate.setImage(request.getImage());
