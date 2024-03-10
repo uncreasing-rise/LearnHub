@@ -4,61 +4,38 @@ import com.example.learnhub.DTO.AnswerDTO;
 import com.example.learnhub.Entity.Answer;
 import com.example.learnhub.Entity.Question;
 import com.example.learnhub.Repository.AnswerRepository;
-import com.example.learnhub.Repository.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
-import java.util.Optional;
-
+import java.util.ArrayList;
+import java.util.List;
 @Service
-public class ServiceOfAnswer {
-
-    private final QuestionRepository questionRepository;
+public class ServiceOfAnswer implements IServiceOfAnswer {
     private final AnswerRepository answerRepository;
 
     @Autowired
-    public ServiceOfAnswer(QuestionRepository questionRepository, AnswerRepository answerRepository) {
-        this.questionRepository = questionRepository;
+    public ServiceOfAnswer(AnswerRepository answerRepository) {
         this.answerRepository = answerRepository;
     }
 
+    @Override
+    public Answer getAnswerById(int id, Question question) {
+        return answerRepository.findByIdAndQuestion(id, question);
+    }
+
     @Transactional
-    public AnswerDTO createAnswer(AnswerDTO answerDTO) {
-        validateAnswerDTO(answerDTO); // Validate the AnswerDTO
+    public List<Answer> convertToAnswerEntities(List<AnswerDTO> answerDTOS, Question question) {
+        List<Answer> answers = new ArrayList<>();
 
-        Optional<Question> optionalQuestion = questionRepository.findById(answerDTO.getQuestionId());
-        if (optionalQuestion.isPresent()) {
-            Question question = optionalQuestion.get();
-            Answer answer = mapAnswerDTOToEntity(answerDTO, question); // Pass the found question
-            Answer savedAnswer = answerRepository.save(answer);
-            return mapAnswerEntityToDTO(savedAnswer);
-        } else {
-            throw new RuntimeException("Question not found");
+        for (AnswerDTO answerDTO : answerDTOS) {
+            Answer answer = new Answer();
+            answer.setText(answerDTO.getAnswerText());
+            answer.setCorrect(answerDTO.getIsCorrect());
+            answer.setQuestion(question);
+            answers.add(answer);
         }
-    }
 
-    private void validateAnswerDTO(AnswerDTO answerDTO) {
-        if (answerDTO.getQuestionId() == null) {
-            throw new IllegalArgumentException("Question ID cannot be null");
-        }
-        // Add more validation if needed
-    }
-
-    private Answer mapAnswerDTOToEntity(AnswerDTO answerDTO, Question question) {
-        Answer answer = new Answer();
-        answer.setQuestion(question);
-        answer.setText(answerDTO.getAnswerText());
-        answer.setCorrect(answerDTO.getIsCorrect());
-        return answer;
-    }
-
-    private AnswerDTO mapAnswerEntityToDTO(Answer answer) {
-        AnswerDTO answerDTO = new AnswerDTO();
-        answerDTO.setAnswerId(answer.getId());
-        answerDTO.setQuestionId(answer.getQuestion().getId());
-        answerDTO.setAnswerText(answer.getText());
-        answerDTO.setIsCorrect(answer.isCorrect());
-        return answerDTO;
+        return answerRepository.saveAll(answers);
     }
 }

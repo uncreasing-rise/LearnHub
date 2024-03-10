@@ -50,7 +50,7 @@ public class CartController {
         List<CartItem> lc =cartItemRepository.findByCartCartId(curCart.getCartId());
         List<CartItemResponseDTO> responseDTOList = new ArrayList<>();
         for(CartItem c : lc){
-            responseDTOList.add(new CartItemResponseDTO(c));
+            responseDTOList.add(new CartItemResponseDTO());
         }
         return ResponseEntity.ok(responseDTOList);
     }

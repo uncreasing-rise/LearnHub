@@ -1,38 +1,55 @@
 package com.example.learnhub.Controller;
 
 import com.example.learnhub.DTO.AnswerDTO;
+import com.example.learnhub.Entity.Answer;
+import com.example.learnhub.Entity.Question;
+import com.example.learnhub.Repository.AnswerRepository;
+import com.example.learnhub.Repository.QuestionRepository;
 import com.example.learnhub.Service.ServiceOfAnswer;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/answers")
 public class AnswerController {
 
     private final ServiceOfAnswer serviceOfAnswer;
+    private final QuestionRepository questionRepository;
+    private final AnswerRepository answerRepository;
 
-    public AnswerController(ServiceOfAnswer serviceOfAnswer) {
+
+
+    public AnswerController(ServiceOfAnswer serviceOfAnswer, QuestionRepository questionRepository, AnswerRepository answerRepository) {
         this.serviceOfAnswer = serviceOfAnswer;
+        this.questionRepository = questionRepository;
+        this.answerRepository = answerRepository;
     }
 
-    @PostMapping("/")
-    public ResponseEntity<?> createAnswer(@RequestBody AnswerDTO answerDTO) {
+
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateAnswer(@PathVariable("id") Integer id, @RequestBody AnswerDTO answerDTO) {
         try {
-            AnswerDTO createdAnswer = serviceOfAnswer.createAnswer(answerDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdAnswer);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to create answer: " + e.getMessage());
+            // Retrieve existing Answer from the database
+            Answer existingAnswer = answerRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Answer not found with id: " + id));
+
+            // Update the properties of the existing Answer
+            existingAnswer.setText(answerDTO.getAnswerText());
+            existingAnswer.setCorrect(answerDTO.getIsCorrect());
+
+
+            // Save the updated Answer
+            answerRepository.save(existingAnswer);
+
+            return ResponseEntity.ok("Answer with id " + id + " updated successfully");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Answer not found for id: " + id);
         }
     }
 
-    // Other endpoints for retrieving, updating, and deleting answers
+
 
 }
-
- 
-

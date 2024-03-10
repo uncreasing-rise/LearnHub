@@ -1,5 +1,7 @@
 package com.example.learnhub.ResponeObject;
 
+import java.util.List;
+
 public class ResponeObject {
      private String status;
 
@@ -15,6 +17,12 @@ public class ResponeObject {
          this.message = message;
          this.data = data;
      }
+
+    public ResponeObject(String s) {
+    }
+
+    public ResponeObject(String imagesUploadedSuccessfully, List<String> imageUrls) {
+    }
 
     public String getStatus() {
         return status;

@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.util.Date;
 
+@Getter
 @Data
 @Entity
 @Table(name = "Cart")
@@ -23,35 +24,19 @@ public class Cart {
     @JoinColumn(name = "UserID")  // Assuming "accountId" is the foreign key column in the Cart table
     private User user;  // Change to the correct attribute name for the relationship
 
-    @Column(name = "CartDate")
+    @Column(name = "cart_date")
     private Date cartDate;
-
-    public Integer getCartId() {
-        return cartId;
-    }
 
     public void setCartId(Integer cartId) {
         this.cartId = cartId;
-    }
-
-    public Double getTotal() {
-        return total;
     }
 
     public void setTotal(Double total) {
         this.total = total;
     }
 
-    public User getUser() {
-        return user;
-    }
-
     public void setUser(User user) {
         this.user = user;
-    }
-
-    public Date getCartDate() {
-        return cartDate;
     }
 
     public void setCartDate(Date cartDate) {

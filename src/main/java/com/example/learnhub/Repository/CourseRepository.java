@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Integer> {
@@ -30,7 +29,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Course c SET c.images = ?2 WHERE c.courseId = ?1")
+    @Query("UPDATE Course c SET c.imageUrl = ?2 WHERE c.courseId = ?1\n")
     int updateMainImage(int courseId, String imageName);
 
     @Query("SELECT c FROM Course c ORDER BY c.coursePrice DESC")
@@ -56,7 +55,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     @Query("SELECT c FROM Course c WHERE c.status = 1")
     List<Course> displayIsNotApprovedCourses();
 
-    @Query("SELECT c FROM Course c WHERE c.categoryId = :categoryId")
+    @Query("SELECT c FROM Course c WHERE c.category.categoryId = :categoryId")
     List<Course> findByCategory(@Param("categoryId") String categoryId);
 
     @Query("SELECT c FROM Course c WHERE c.status <> 2")

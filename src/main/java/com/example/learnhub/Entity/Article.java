@@ -1,6 +1,7 @@
 package com.example.learnhub.Entity;
 
-import com.google.api.client.util.PemReader;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -11,15 +12,16 @@ public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ArticleID")
-    private Integer articleId;
+    private Integer articleID;
 
-    @Column(name = "ArticleData")
-    private String articleData;
+    @Column(name = "Title")
+    private String title;
+
+    @Column(name = "article_data")
+    private String articleUrl; // Change type to String to store URL
 
     @ManyToOne
-    @JoinColumn(name = "SectionID", nullable = false)
+    @JsonIgnore
+    @JoinColumn(name = "SectionID") // Many-to-One association with Section
     private Section section;
-    @Column(name = "ArticleTitle")
-    private String articleTitle;
-
 }

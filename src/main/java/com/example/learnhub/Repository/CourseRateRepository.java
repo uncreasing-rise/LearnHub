@@ -34,8 +34,10 @@ public interface CourseRateRepository extends JpaRepository<Rating, Integer> {
     @Query("SELECT COUNT(cr.course.courseId) FROM Rating cr WHERE cr.course.courseId = :courseId AND cr.ratingValue > 0")
     Integer countCourseRateByCourseId(@Param("courseId") Integer courseId);
 
-    @Query("SELECT ROUND(AVG(cr.ratingValue), 0) FROM Rating cr WHERE cr.course.courseId = :courseId AND cr.ratingValue > 0")
-    Float avgCourseRateByCourseId(@Param("courseId") Integer courseId);
+    @Query("SELECT CAST(ROUND(AVG(c.ratingValue), 0) AS Double) FROM Rating c WHERE c.course.courseId = ?1 AND c.ratingValue > 0")
+    Double avgCourseRateByCourseId(Integer courseId);
+
+
 
     Optional<Rating> findById(int ratingId);
 

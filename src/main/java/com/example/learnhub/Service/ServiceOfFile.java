@@ -52,12 +52,22 @@ public class ServiceOfFile implements IServiceOfFile {
         return blob.delete();
     }
 
-    @Override
-    public void uploadFile(MultipartFile file) throws IOException {
 
+    @Override
+    public String uploadFile(MultipartFile file) throws IOException {
         BlobId blobId = BlobId.of(bucketName, file.getOriginalFilename());
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).
-                setContentType(file.getContentType()).build();
-        Blob blob = storage.create(blobInfo,file.getBytes());
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType(file.getContentType())
+                .build();
+        Blob blob = storage.create(blobInfo, file.getBytes());
+
+        // Trả về đường link của tập tin đã tải lên
+        return file.getOriginalFilename();
+    }
+
+    @Override
+    public String constructFileUrl(String originalFilename) {
+        // Trả về URL công khai cho file
+        return "https://storage.googleapis.com/" + bucketName + "/" + originalFilename;
     }
 }

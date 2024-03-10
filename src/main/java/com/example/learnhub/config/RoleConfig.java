@@ -9,7 +9,6 @@ import com.example.learnhub.security.utils.AESUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
@@ -21,14 +20,17 @@ import java.util.List;
 public class RoleConfig {
 
 
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
 
 
     @Value("${aes.key}")
     private String key;
+
+    public RoleConfig(RoleRepository roleRepository, UserRepository userRepository) {
+        this.roleRepository = roleRepository;
+        this.userRepository = userRepository;
+    }
 
     @PostConstruct
     @SneakyThrows
@@ -46,7 +48,8 @@ public class RoleConfig {
     private void createRoleIfNotExists(String roleName) throws Exception {
         List<Role> roles = roleRepository.findByRoleName(roleName);
         if (roles.isEmpty()) {
-            Role role = new Role(roleName);
+            Role role = new Role();
+            role.setRoleName(roleName);
             roleRepository.save(role);
         }
         else {

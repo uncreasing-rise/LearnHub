@@ -1,160 +1,174 @@
 package com.example.learnhub.Controller;
 
 import com.example.learnhub.DTO.CourseDTO;
+import com.example.learnhub.DTO.ResponeCourseDTO;
+import com.example.learnhub.DTO.SectionDTO;
 import com.example.learnhub.Entity.Course;
-import com.example.learnhub.Entity.Rating;
 import com.example.learnhub.Exceptions.AppServiceExeption;
-import com.example.learnhub.InterfaceOfControllers.InterfaceOfCourseController;
 import com.example.learnhub.Repository.CourseRepository;
 import com.example.learnhub.Service.ServiceOfCourse;
+import com.example.learnhub.Service.ServiceOfLearningDetail;
+import com.example.learnhub.Service.ServiceOfSection;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+@CrossOrigin(origins = "*", maxAge = 3600)
+@MultipartConfig
 @RestController
 @RequestMapping("/courses")
-public class CourseController implements InterfaceOfCourseController {
-    @Autowired
-    CourseRepository courseRepository;
+public class CourseController {
 
-    private final ServiceOfCourse courseService;
+    private final ServiceOfSection serviceOfSection;
+    private final ServiceOfCourse serviceOfCourse;
+    private final CourseRepository courseRepository;
+    private final ServiceOfLearningDetail serviceOfLearningDetail;
 
     @Autowired
-    public CourseController(ServiceOfCourse courseService) {
-        this.courseService = courseService;
+    public CourseController(ServiceOfSection serviceOfSection, ServiceOfCourse courseService, CourseRepository courseRepository, ServiceOfLearningDetail serviceOfLearningDetail) {
+        this.serviceOfSection = serviceOfSection;
+        this.serviceOfCourse = courseService;
+        this.courseRepository = courseRepository;
+        this.serviceOfLearningDetail = serviceOfLearningDetail;
     }
 
+    // API để hiển thị danh sách các khóa học chưa được phê duyệt
     @GetMapping("/displayIsNotApprovedCourses")
     public List<CourseDTO> displayIsNotApprovedCourses() {
         List<Course> unapprovedCourses = courseRepository.findUnapprovedCourses();
-        return courseService.fromCourseListToCourseDTOList(unapprovedCourses);
+        return serviceOfCourse.fromCourseListToCourseDTOList(unapprovedCourses);
     }
 
+    // API để hiển thị thông tin về các phần và video của một khóa học
     @PostMapping("/showSectionAndVideo/{id}")
     public ResponseEntity<CourseDTO> showSectionAndVideo(@PathVariable int id) {
         try {
-            CourseDTO courseDTO = courseService.showSectionAndVideo(id);
+            CourseDTO courseDTO = serviceOfCourse.showSectionAndVideo(id);
             return new ResponseEntity<>(courseDTO, HttpStatus.OK);
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-
+    // API để tìm kiếm các khóa học theo giá
     @GetMapping("/{price}")
     public List<CourseDTO> findAllCourseByPrice(@PathVariable double price) {
         List<Course> courses = courseRepository.findByPrice(price);
-        return courseService.fromCourseListToCourseDTOList(courses);
+        return serviceOfCourse.fromCourseListToCourseDTOList(courses);
     }
 
+    // API để thêm mới một khóa học
     @PostMapping("/addCourse")
     @ResponseStatus(HttpStatus.CREATED)
-    public CourseDTO createCourse(@RequestBody @Valid CourseDTO dto) throws AppServiceExeption {
-        try {
-            Course createdCourse = courseService.createCourse(dto);
-            return courseService.fromCourseToCourseDTO(createdCourse);
-        } catch (DataIntegrityViolationException e) {
-            throw new AppServiceExeption("Database integrity violation. Fail to create Course");
-        } catch (Exception e) {
-            throw new AppServiceExeption("Unexpected error. Fail to create Course");
+    public ResponeCourseDTO createCourse(@RequestPart("courseDTO") @Valid CourseDTO courseDTO,
+                                         @RequestPart("articleFiles") List<MultipartFile> articleFiles,
+                                         @RequestPart("videoFiles") List<MultipartFile> videoFiles)
+            throws AppServiceExeption, IOException {
+        Course course = serviceOfCourse.createCourse(courseDTO);
+
+        List<SectionDTO> sections = courseDTO.getSections();
+        for (SectionDTO createSectionDTO : sections) {
+            serviceOfSection.createSection(createSectionDTO, course, articleFiles, videoFiles);
         }
+
+        serviceOfLearningDetail.createLearningDetail(courseDTO.getLearningDetail(), course);
+
+        return serviceOfCourse.fromCourseToResponeCourseDTO(course);
     }
 
 
-    @GetMapping("/getCourses")
-    public List<CourseDTO> getCourses() {
-        List<Course> courses = courseService.getAllCourses();
-        return courseService.fromCourseListToCourseDTOList(courses);
+    // API để lấy tất cả các khóa học
+    @GetMapping
+    public ResponseEntity<List<ResponeCourseDTO>> getAllCourses() {
+        List<Course> courses = serviceOfCourse.getAllCourses();
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(courseDTOs);
     }
 
-    @GetMapping("/getUnapprovedCourses")
-    public List<CourseDTO> getUnapprovedCourses() {
-        List<Course> unapprovedCourses = courseService.getUnapprovedCourses();
-        return courseService.fromCourseListToCourseDTOList(unapprovedCourses);
+    // API để lấy danh sách các khóa học chưa được phê duyệt
+    @GetMapping("/unapproved")
+    public ResponseEntity<List<ResponeCourseDTO>> getUnapprovedCourses() {
+        List<Course> unapprovedCourses = serviceOfCourse.getUnapprovedCourses();
+        List<ResponeCourseDTO> unapprovedCourseDTOs = unapprovedCourses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(unapprovedCourseDTOs);
     }
 
-    @GetMapping("/findCourseThatContainsKeyword/{keyword}")
-    public List<CourseDTO> findCourseThatContainsKeyword(@PathVariable String keyword) {
-        List<Course> courses = courseService.findCoursesByKeyword(keyword);
-        return courseService.fromCourseListToCourseDTOList(courses);
+    // API để tìm kiếm các khóa học theo từ khóa
+    @GetMapping("/search")
+    public ResponseEntity<List<ResponeCourseDTO>> searchCoursesByKeyword(@RequestParam String keyword) {
+        List<Course> courses = serviceOfCourse.findCoursesByKeyword(keyword);
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(courseDTOs);
     }
 
-    @GetMapping("/getCoursesByCategory/{category}")
-    public List<CourseDTO> getCoursesByCategory(@PathVariable String category) {
-        List<Course> courses = courseService.getCoursesByCategory(category);
-        return courseService.fromCourseListToCourseDTOList(courses);
+    // API để lấy danh sách các khóa học theo danh mục
+    @GetMapping("/category/{category}")
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByCategory(@PathVariable String category) {
+        List<Course> courses = serviceOfCourse.getCoursesByCategory(category);
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(courseDTOs);
     }
 
-    @GetMapping("/getCoursesByPriceHigher")
-    public List<CourseDTO> getCoursesByPriceHigher() {
-        List<Course> courses = courseService.getCoursesByPriceHigher();
-        return courseService.fromCourseListToCourseDTOList(courses);
+    // API để lấy danh sách các khóa học theo giá cao hơn
+    @GetMapping("/price/higher")
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByPriceHigher() {
+        List<Course> courses = serviceOfCourse.getCoursesByPriceHigher();
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(courseDTOs);
     }
 
-    @GetMapping("/getCoursesByPriceLower")
-    public List<CourseDTO> getCoursesByPriceLower() {
-        List<Course> courses = courseService.getCoursesByPriceLower();
-        return courseService.fromCourseListToCourseDTOList(courses);
+    // API để lấy danh sách các khóa học theo giá thấp hơn
+    @GetMapping("/price/lower")
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByPriceLower() {
+        List<Course> courses = serviceOfCourse.getCoursesByPriceLower();
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(courseDTOs);
     }
 
-    @GetMapping("/getCoursesByDateNew")
-    public List<CourseDTO> getCoursesByDateNew() {
-        List<Course> courses = courseService.getCoursesByDateNew();
-        return courseService.fromCourseListToCourseDTOList(courses);
+    // API để lấy danh sách các khóa học theo ngày mới nhất
+    @GetMapping("/date/new")
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByDateNew() {
+        List<Course> courses = serviceOfCourse.getCoursesByDateNew();
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(courseDTOs);
     }
 
-    @GetMapping("/getCoursesByDateOld")
-    public List<CourseDTO> getCoursesByDateOld() {
-        List<Course> courses = courseService.getCoursesByDateOld();
-        return courseService.fromCourseListToCourseDTOList(courses);
+    // API để lấy danh sách các khóa học theo ngày cũ nhất
+    @GetMapping("/date/old")
+    public ResponseEntity<List<ResponeCourseDTO>> getCoursesByDateOld() {
+        List<Course> courses = serviceOfCourse.getCoursesByDateOld();
+        List<ResponeCourseDTO> courseDTOs = courses.stream()
+                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok().body(courseDTOs);
     }
 
-    @GetMapping("/getCourseById/{id}")
-    public ResponseEntity<CourseDTO> getCourseById(@PathVariable int id) {
-        CourseDTO courseDTO = courseService.getCourseById(id);
-
-        return courseDTO != null
-                ? new ResponseEntity<>(courseDTO, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    // API để xóa một khóa học
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable int id) {
+        serviceOfCourse.deleteCourse(id);
+        return ResponseEntity.noContent().build();
     }
-
-    @PutMapping("/updateCourse/{id}")
-    public ResponseEntity<CourseDTO> updateCourse(@PathVariable int id, @RequestBody @Valid CourseDTO dto) {
-        CourseDTO updatedCourse = courseService.updateCourse(id, dto);
-
-        return updatedCourse != null
-                ? new ResponseEntity<>(updatedCourse, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    @DeleteMapping("/deleteCourse/{id}")
-    public void deleteCourse(@PathVariable int id) {
-        courseService.deleteCourse(id);
-    }
-
-    @PostMapping("/rateCourse/{id}/{rating}")
-    public ResponseEntity<CourseDTO> rateCourse(@PathVariable int id, @PathVariable int rating) {
-        // Create a Rating object with the provided rating value
-        Rating newRating = new Rating();
-     //  newRating.(rating);
-
-        // Create a list containing the single rating
-        List<Rating> ratings = Collections.singletonList(newRating);
-
-        CourseDTO updatedCourse = courseService.rateCourse(id, ratings);
-
-        return updatedCourse != null
-                ? new ResponseEntity<>(updatedCourse, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
 
 }

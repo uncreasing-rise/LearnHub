@@ -1,7 +1,12 @@
 package com.example.learnhub.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -12,10 +17,20 @@ public class Section {
     @Column(name = "SectionID")
     private Integer sectionId;
 
-    @Column(name = "SectionName")
+    @Column(name = "section_name")
     private String sectionName;
 
-    @ManyToOne // Many sections can be associated with one course
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL)
+    private List<Video> videos;
+
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL)
+
+    private List<Article> articles;
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL)
+    private List<Quiz> quizzes;
+
+    @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "CourseID")
-    private Course course; // Change the type to Course
+    private Course course;
 }
