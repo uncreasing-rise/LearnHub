@@ -22,4 +22,7 @@ public class AnswerDTO {
 
     @NotNull
     private Boolean isCorrect;
+
+    public AnswerDTO(Integer id, String text, boolean correct) {
+    }
 }

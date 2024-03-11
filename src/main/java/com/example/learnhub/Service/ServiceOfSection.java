@@ -46,7 +46,7 @@ public class ServiceOfSection {
         sectionDTO.setQuizzes(section.getQuizzes());
         sectionDTO.setArticles(section.getArticles());
         sectionDTO.setVideos(section.getVideos());
-        sectionDTO.setCourse(section.getCourse());
+//        sectionDTO.setCourse(section.getCourse());
         return sectionDTO;
     }
     public Section createSection(SectionDTO dto, Course course, List<MultipartFile> articleFiles, List<MultipartFile> videoFiles) throws AppServiceExeption, IOException {
@@ -94,29 +94,17 @@ public class ServiceOfSection {
         return sectionRepository.save(section);
     }
 
-    public Section updateSection(Integer sectionId, SectionDTO updatedSectionDTO, List<MultipartFile> articleFiles, List<MultipartFile> videoFiles) throws AppServiceExeption, IOException {
+    public Section updateSection(Integer sectionId, SectionDTO updatedSectionDTO) {
         // Tìm phần cần chỉnh sửa từ cơ sở dữ liệu
         Section section = sectionRepository.findById(sectionId)
                 .orElseThrow(() -> new SectionNotFoundException(sectionId));
-
         // Cập nhật thông tin của phần
         section.setSectionName(updatedSectionDTO.getSectionName());
-
         // Lưu phần đã cập nhật vào cơ sở dữ liệu
         sectionRepository.save(section);
-
-        // Cập nhật các articles và videos của phần
-//        List<Article> updatedArticles = serviceOfArticle.updateArticles(section, articleFiles, updatedSectionDTO.getArticles());
-//        List<Video> updatedVideos = serviceOfVideo.updateVideos(section, videoFiles, updatedSectionDTO.getVideos());
-//        List<Quiz> updatedQuizzes = serviceOfVideo.updateQuizzes(section, updatedSectionDTO.getQuizzes());
-
-//        // Cập nhật các articles và videos cho phần
-//        section.setArticles(updatedArticles);
-//        section.setVideos(updatedVideos);
-//        section.setQuizzes(updatedQuizzes);
-        // Lưu lại phần đã được cập nhật
         return sectionRepository.save(section);
     }
+
 
 
 }

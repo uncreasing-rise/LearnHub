@@ -16,4 +16,6 @@ public class QuestionDTO {
     private String questionText;
     private List<AnswerDTO> answerDTOs; // added list of AnswerDTO
 
+    public QuestionDTO(Integer id, String text, Integer point, List<AnswerDTO> answerDTOS) {
+    }
 }
