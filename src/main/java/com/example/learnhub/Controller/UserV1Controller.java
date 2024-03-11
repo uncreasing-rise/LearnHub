@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -546,7 +547,7 @@ public class UserV1Controller {
     }
 
 
-    @PutMapping("/v1/avatar")
+    @PostMapping(value = "/v1/avatar",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<ApiResponse<Object>> uploadAvatar(Principal principal, @RequestParam("file") MultipartFile file) {
         try {
             User user = getUserAvailable(principal.getName(), false);
@@ -557,11 +558,12 @@ public class UserV1Controller {
                     log.error("Can not delete file: {}" , user.getImage());
                 }
             }
-            fileService.uploadFile(file);
-//            String url = serviceOfImage.saveImage(file);
+//            fileService.uploadFile(file);
+            String url = serviceOfImage.saveImage(file);
             user.setImage(file.getOriginalFilename());
             userRepository.save(user);
-            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(FileUtils.getFileUrl(file.getOriginalFilename())),HttpStatus.OK);
+//            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(FileUtils.getFileUrl(file.getOriginalFilename())),HttpStatus.OK);
+            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(url),HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
