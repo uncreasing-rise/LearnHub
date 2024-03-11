@@ -6,11 +6,12 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Getter
 @Setter
 @ToString
-public class UserRegisterRequest {
+public class AdminAddCourseManagerRequest {
     @NotBlank
     @Email
     private String email;
@@ -18,5 +19,4 @@ public class UserRegisterRequest {
     private String fullname;
     @NotBlank
     private String password;
-
 }

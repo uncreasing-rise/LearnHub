@@ -10,13 +10,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class UserRegisterRequest {
+public class AdminRequestToChangeEmailRequest {
     @NotBlank
     @Email
-    private String email;
+    private String emailOrigin;
     @NotBlank
-    private String fullname;
-    @NotBlank
-    private String password;
-
+    @Email
+    private String emailChange;
 }

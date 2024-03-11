@@ -6,6 +6,7 @@ import com.example.learnhub.Entity.User;
 import com.example.learnhub.Repository.RoleRepository;
 import com.example.learnhub.Repository.UserRepository;
 import com.example.learnhub.security.utils.AESUtils;
+import com.example.learnhub.utils.FileUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,8 @@ public class RoleConfig {
             createRoleIfNotExists(com.example.learnhub.security.Role.STUDENT.name());
             createRoleIfNotExists(com.example.learnhub.security.Role.COURSEMANAGER.name());
             createRoleIfNotExists(com.example.learnhub.security.Role.ADMIN.name());
+            log.info("Test get bucket: {}", FileUtils.getFileUrl("nasd"));
+            log.info("Finish config");
         } catch (Exception e) {
             log.error("Error during RoleConfig initialization", e);
         }
@@ -61,7 +64,6 @@ public class RoleConfig {
                     user = new User()
                             .setEnable(true)
                             .setEmail("Admin@email.com")
-                            .setFacebook("facebook")
                             .setToken("token")
                             .setImage("url")
                             .setFullName("fullname")
