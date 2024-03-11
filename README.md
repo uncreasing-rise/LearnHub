@@ -1,6 +1,6 @@
 # LearnHub
 
-[![LearnHub Logo](logo.png)]("https://imgur.com/a/mwShfe0")
+[![LearnHub Logo]("https://imgur.com/a/mwShfe0")]
 
 ## Description
 
