@@ -551,7 +551,7 @@ public class UserV1Controller {
     ResponseEntity<ApiResponse<Object>> uploadAvatar(Principal principal, @RequestParam("file") MultipartFile file) {
         try {
             User user = getUserAvailable(principal.getName(), false);
-            if(!user.getImage().equals("url")){
+            if(Objects.nonNull(user.getImage()) && !user.getImage().equals("url")){
                 try {
                     fileService.deleteFile(user.getImage());
                 } catch (Exception e){
