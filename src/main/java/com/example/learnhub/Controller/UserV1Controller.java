@@ -22,6 +22,7 @@ import com.example.learnhub.security.UserDetailsImpl;
 import com.example.learnhub.security.jwt.JWTUtils;
 import com.example.learnhub.security.utils.AESUtils;
 import com.example.learnhub.security.utils.RandomStringGenerator;
+import com.example.learnhub.utils.FileUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -556,10 +557,11 @@ public class UserV1Controller {
                     log.error("Can not delete file: {}" , user.getImage());
                 }
             }
-            String url = serviceOfImage.saveImage(file);
+            fileService.uploadFile(file);
+//            String url = serviceOfImage.saveImage(file);
             user.setImage(file.getOriginalFilename());
             userRepository.save(user);
-            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(url),HttpStatus.OK);
+            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(FileUtils.getFileUrl(file.getOriginalFilename())),HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
