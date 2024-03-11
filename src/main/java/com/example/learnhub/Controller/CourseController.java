@@ -39,18 +39,12 @@ public class CourseController {
         this.serviceOfLearningDetail = serviceOfLearningDetail;
     }
 
-    // API để hiển thị danh sách các khóa học chưa được phê duyệt
-    @GetMapping("/displayIsNotApprovedCourses")
-    public List<CourseDTO> displayIsNotApprovedCourses() {
-        List<Course> unapprovedCourses = courseRepository.findUnapprovedCourses();
-        return serviceOfCourse.fromCourseListToCourseDTOList(unapprovedCourses);
-    }
 
     // API để hiển thị thông tin về các phần và video của một khóa học
     @PostMapping("/showSectionAndVideo/{id}")
-    public ResponseEntity<CourseDTO> showSectionAndVideo(@PathVariable int id) {
+    public ResponseEntity<ResponeCourseDTO> showSectionAndVideo(@PathVariable int id) {
         try {
-            CourseDTO courseDTO = serviceOfCourse.showSectionAndVideo(id);
+            ResponeCourseDTO courseDTO = serviceOfCourse.showSectionAndVideo(id);
             return new ResponseEntity<>(courseDTO, HttpStatus.OK);
         } catch (NoSuchElementException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -94,15 +88,6 @@ public class CourseController {
         return ResponseEntity.ok().body(courseDTOs);
     }
 
-    // API để lấy danh sách các khóa học chưa được phê duyệt
-    @GetMapping("/unapproved")
-    public ResponseEntity<List<ResponeCourseDTO>> getUnapprovedCourses() {
-        List<Course> unapprovedCourses = serviceOfCourse.getUnapprovedCourses();
-        List<ResponeCourseDTO> unapprovedCourseDTOs = unapprovedCourses.stream()
-                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok().body(unapprovedCourseDTOs);
-    }
 
     // API để tìm kiếm các khóa học theo từ khóa
     @GetMapping("/search")

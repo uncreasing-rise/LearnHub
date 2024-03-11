@@ -16,7 +16,7 @@ public class ResponeCourseDTO {
     private String courseTitle;
     private String courseDes;
     private Double coursePrice;
-    private Category category;
+    private int categoryId;
     private Boolean isPassed;
     private Date courseDate;
     private List<Rating> ratings;

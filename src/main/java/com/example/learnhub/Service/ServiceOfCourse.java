@@ -8,6 +8,7 @@ import com.example.learnhub.Repository.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +20,6 @@ public class ServiceOfCourse {
     private final CourseRateRepository courseRateRepository;
     private final ServiceOfSection serviceOfSection;
     private final ServiceOfLearningDetail serviceOfLearningDetail;
-
 
     @Autowired
     public ServiceOfCourse(CourseRepository courseRepository, CourseRateRepository courseRateRepository, ServiceOfSection serviceOfSection, ServiceOfLearningDetail serviceOfLearningDetail) {
@@ -39,7 +39,6 @@ public class ServiceOfCourse {
         if (courseDTO == null) {
             throw new IllegalArgumentException("CourseDTO are required");
         }
-
         // Tạo Course từ CourseDTO
         Course course = new Course();
         course.setCourseTitle(courseDTO.getCourseTitle());
@@ -51,22 +50,16 @@ public class ServiceOfCourse {
         course.setLevel(courseDTO.getLevel());
         course.setTag(courseDTO.getTag());
         course.setUserId(courseDTO.getUserId());
-
         // Lưu Course để có được ID của nó
         return courseRepository.save(course);
     }
-
 
     public void deleteCourse(int courseId) {
         courseRepository.deleteById(courseId);
     }
 
-
-
     public List<CourseDTO> fromCourseListToCourseDTOList(List<Course> courses) {
-        return courses.stream()
-                .map(this::fromCourseToCourseDTO)
-                .collect(Collectors.toList());
+        return courses.stream().map(this::fromCourseToCourseDTO).collect(Collectors.toList());
     }
 
     public List<Course> getCoursesByDateOld() {
@@ -93,22 +86,9 @@ public class ServiceOfCourse {
         return courseRepository.findByKeyword(keyword);
     }
 
-    public List<Course> getUnapprovedCourses() {
-        return courseRepository.findUnapprovedCourses();
-    }
-
-
-
-
-
-
-
-
-
-
-    public CourseDTO showSectionAndVideo(@RequestParam int id) {
+    public ResponeCourseDTO showSectionAndVideo(@RequestParam int id) {
         Course course = courseRepository.findById(id);
-        return  fromCourseToCourseDTO(course);
+        return fromCourseToResponeCourseDTO(course);
     }
 
     public CourseDTO fromCourseToCourseDTO(Course course) {
@@ -139,7 +119,7 @@ public class ServiceOfCourse {
         courseDTO.setCourseTitle(course.getCourseTitle());
         courseDTO.setCourseDes(course.getCourseDes());
         courseDTO.setCoursePrice(course.getCoursePrice());
-        courseDTO.setCategory(course.getCategory());
+        courseDTO.setCategoryId(course.getCategory().getCategoryId());
         courseDTO.setIsPassed(course.getIsPassed());
         courseDTO.setCourseDate(course.getCourseDate());
         courseDTO.setCoursePrice(course.getCoursePrice());
@@ -154,11 +134,11 @@ public class ServiceOfCourse {
         courseDTO.setStatus(course.getStatus());
         return courseDTO;
     }
-    public ResponeCourseDTO updateCourse(Integer courseId, CourseDTO updatedCourseDTO) throws CourseNotFoundException {
+
+    public ResponeCourseDTO updateCourse(Integer courseId, CourseDTO updatedCourseDTO, List<MultipartFile> articleFiles, List<MultipartFile> videoFiles) throws CourseNotFoundException {
         // Retrieve the existing course from the database
         Course existingCourse = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CourseNotFoundException(courseId));
-
         // Update the existing course with the new data
         existingCourse.setCourseTitle(updatedCourseDTO.getCourseTitle());
         existingCourse.setCourseDes(updatedCourseDTO.getCourseDes());
@@ -170,37 +150,11 @@ public class ServiceOfCourse {
         existingCourse.setTag(updatedCourseDTO.getTag());
         existingCourse.setUserId(updatedCourseDTO.getUserId());
         existingCourse.setStatus(updatedCourseDTO.getStatus());
-        updateSections(existingCourse, updatedCourseDTO.getSections1());
+        // Update sections if needed
         // Save the updated course to the database
         Course updatedCourse = courseRepository.save(existingCourse);
-        // Convert the updated course to ResponeCourseDTO and return
+        // Convert the updated course to ResponseCourseDTO and return
         return fromCourseToResponeCourseDTO(updatedCourse);
     }
-    private void updateSections(Course course, List<ResponeSectionDTO> updatedSectionsDTO) {
-        // Remove existing sections not present in the updatedSectionsDTO
-        List<Section> existingSections = course.getSections();
-        existingSections.removeIf(existingSection ->
-                updatedSectionsDTO.stream().noneMatch(updatedSection -> updatedSection.getSectionId().equals(existingSection.getSectionId())));
-        // Update or add sections from updatedSectionsDTO
-        for (ResponeSectionDTO updatedSectionDTO : updatedSectionsDTO) {
-            Section existingSection = existingSections.stream()
-                    .filter(section -> section.getSectionId().equals(updatedSectionDTO.getSectionId()))
-                    .findFirst().orElse(null);
-            if (existingSection != null) {
-                // Update existing section
-                existingSection.setSectionName(updatedSectionDTO.getSectionName());
-                existingSection.setQuizzes(updatedSectionDTO.getQuizzes());
-                existingSection.setArticles(updatedSectionDTO.getArticles());
-                existingSection.setVideos(updatedSectionDTO.getVideos());
-            } else {
-                // Add new section
-                Section newSection = new Section();
-                newSection.setSectionName(updatedSectionDTO.getSectionName());
-                newSection.setQuizzes(updatedSectionDTO.getQuizzes());
-                newSection.setVideos(updatedSectionDTO.getVideos());
-                newSection.setArticles(updatedSectionDTO.getArticles());
-                course.getSections().add(newSection);
-            }
-        }
-    }
 }
+

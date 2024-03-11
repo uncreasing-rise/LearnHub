@@ -1,9 +1,12 @@
 package com.example.learnhub.Service;
 
 import com.example.learnhub.DTO.VideoDTO;
+import com.example.learnhub.Entity.Article;
 import com.example.learnhub.Entity.Section;
 import com.example.learnhub.Entity.Video;
+import com.example.learnhub.Repository.SectionRepository;
 import com.example.learnhub.Repository.VideoRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,10 +22,12 @@ public class ServiceOfVideo implements IServiceOfVideo {
 
     private final ServiceOfFile serviceOfFile;
     private final VideoRepository videoRepository;
+    private final SectionRepository sectionRepository;
 
-    public ServiceOfVideo(ServiceOfFile serviceOfFile, VideoRepository videoRepository) {
+    public ServiceOfVideo(ServiceOfFile serviceOfFile, VideoRepository videoRepository, SectionRepository sectionRepository) {
         this.serviceOfFile = serviceOfFile;
         this.videoRepository = videoRepository;
+        this.sectionRepository = sectionRepository;
     }
 
 
@@ -34,10 +39,8 @@ public class ServiceOfVideo implements IServiceOfVideo {
         video.setVideoData(dto.getVideoUrl());
         video.setDescription(dto.getDescription());
         video.setIsTrial(dto.getIsTrial());
-        return videoRepository.save(video) ;
+        return videoRepository.save(video);
     }
-
-
 
 
     // Controller or Service Layer
@@ -84,78 +87,117 @@ public class ServiceOfVideo implements IServiceOfVideo {
         return StringUtils.hasText(filename) && getArticleFileExtensions().stream()
                 .anyMatch(ext -> filename.toLowerCase().endsWith(ext));
     }
+
     private List<String> getArticleFileExtensions() {
         // Add more video file extensions as needed (e.g., mkv, flv, etc.)
         return List.of(".mp4", ".mp3", ".doc", ".docx");
     }
+
     public String constructFileUrl(String originalFilename) {
         // Trả về URL công khai cho file
         return "https://storage.googleapis.com/" + "learnhub_bucket" + "/" + originalFilename;
     }
 
-    public VideoDTO fromVideoIntoResponeVideoDTO(Video video) {
 
-        VideoDTO videoDTO = new VideoDTO();
-        videoDTO.setTitle(video.getTitle());
-        videoDTO.setVideoUrl(video.getVideoData());
-        videoDTO.setDescription(video.getDescription());
-        videoDTO.setIsTrial(video.getIsTrial());
-
-        return videoDTO;
-    }
     @Override
     public List<Video> getVideos() {
-
         return null;
     }
 
-    public List<Video> updateVideos(Section section, List<MultipartFile> videoFiles, List<VideoDTO> videos) {
-        List<Video> currentVideos = section.getVideos();
-        List<Video> updatedVideos = new ArrayList<>();
+
+    @Transactional
+    public Video updateVideo(Section section, MultipartFile videoFile, VideoDTO videoDTO) {
+        // Check if the file and DTO are valid
+        if (videoFile == null || videoDTO == null) {
+            throw new IllegalArgumentException("Invalid video file or DTO provided");
+        }
+
+        // Check if the file is a valid video file
+        if (!isVideoFile(videoFile)) {
+            throw new IllegalArgumentException("File is not a valid video file");
+        }
 
         try {
-            for (int i = 0; i < videos.size(); i++) {
-                VideoDTO videoDTO = videos.get(i);
+            // Upload the video file to GCS and get the file path
+            String videoFilePath = serviceOfFile.uploadFile(videoFile);
 
-                // Check if the video DTO has an ID
-                if (videoDTO.getVideoId() != null) {
-                    // Find the corresponding video in the current videos list
-                    Optional<Video> optionalVideo = currentVideos.stream().filter(v -> v.getVideoId().equals(videoDTO.getVideoId())).findFirst();
-                    if (optionalVideo.isPresent()) {
-                        Video existingVideo = optionalVideo.get();
-                        // Update video information
-                        existingVideo.setTitle(videoDTO.getTitle());
-                        existingVideo.setDescription(videoDTO.getDescription());
-                        existingVideo.setIsTrial(videoDTO.getIsTrial());
-                        // Add the existing video to the updated videos list
-                        updatedVideos.add(existingVideo);
-                    }
-                } else {
-                    // If the video DTO does not have an ID, it means it's a new video
-                    MultipartFile videoFile = videoFiles.get(i);
-                    if (isVideoFile(videoFile)) {
-                        // Upload video file to GCS using ServiceOfFile
-                        String videoFilePath = serviceOfFile.uploadFile(videoFile);
-                        // Create Video entity
-                        Video newVideo = new Video();
-                        newVideo.setSection(section);
-                        newVideo.setVideoData(constructFileUrl(videoFilePath));
-                        newVideo.setTitle(videoDTO.getTitle());
-                        newVideo.setDescription(videoDTO.getDescription());
-                        newVideo.setIsTrial(videoDTO.getIsTrial());
-                        // Add the new video to the updated videos list
-                        updatedVideos.add(videoRepository.save(newVideo));
-                    } else {
-                        throw new IllegalArgumentException("File is not a valid video file");
-                    }
-                }
+            // Retrieve the video by its ID
+            Optional<Video> optionalVideo = videoRepository.findById(videoDTO.getVideoId());
+            if (optionalVideo.isPresent()) {
+                Video existingVideo = optionalVideo.get();
+                // Update video properties
+                existingVideo.setSection(section); // Set the section ID
+                existingVideo.setVideoData(constructFileUrl(videoFilePath)); // Set the file path
+                existingVideo.setTitle(videoDTO.getTitle());
+                existingVideo.setDescription(videoDTO.getDescription());
+                existingVideo.setIsTrial(videoDTO.getIsTrial());
+                // Save the updated video
+                return videoRepository.save(existingVideo);
+            } else {
+                throw new IllegalArgumentException("Video not found for ID: " + videoDTO.getVideoId());
             }
         } catch (IOException e) {
             // Handle upload failure
             e.printStackTrace();
+            throw new RuntimeException("Failed to update video: " + e.getMessage());
         }
-        // Return the list of updated and new videos
-        return updatedVideos;
+    }
+    public Video createVideoToSection(int sectionId, MultipartFile videoFile, VideoDTO videoDTO) {
+        // Retrieve the section from the database
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new IllegalArgumentException("Section not found for ID: " + sectionId));
+
+        // Check if the video file and DTO are provided
+        if (videoFile == null || videoDTO == null) {
+            throw new IllegalArgumentException("Invalid video file or DTO provided");
+        }
+
+        try {
+            // Check if the file is a valid video file
+            if (isVideoFile(videoFile)) {
+                // Upload video file to GCS using ServiceOfFile
+                String videoFilePath = serviceOfFile.uploadFile(videoFile);
+                // Create Video entity
+                Video video = new Video();
+                video.setSection(section); // Set the section directly
+                video.setVideoData(constructFileUrl(videoFilePath)); // Set the file path
+                video.setTitle(videoDTO.getTitle());
+                video.setDescription(videoDTO.getDescription());
+                video.setIsTrial(videoDTO.getIsTrial());
+                // Save the Video entity
+                return videoRepository.save(video);
+            } else {
+                throw new IllegalArgumentException("File is not a valid video file");
+            }
+        } catch (IOException e) {
+            // Handle upload failure
+            e.printStackTrace();
+            return null; // Return null if an exception occurs
+        }
     }
 
+
+    @Transactional
+    public boolean deleteVideoFromSection(Integer sectionId, Integer videoId) {
+        try {
+            Optional<Section> optionalSection = sectionRepository.findById(sectionId);
+            if (optionalSection.isPresent()) {
+                Section section = optionalSection.get();
+                Optional<Video> optionalVideo = videoRepository.findById(videoId);
+                if (optionalVideo.isPresent()) {
+                    Video video = optionalVideo.get();
+                    videoRepository.delete(video);
+                    return true; // Successfully deleted article
+                } else {
+                    throw new IllegalArgumentException("Video not found for ID: " + videoId);
+                }
+            } else {
+                throw new IllegalArgumentException("Section not found for ID: " + sectionId);
+            }
+        } catch (Exception e) {
+            // Handle delete failure
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
