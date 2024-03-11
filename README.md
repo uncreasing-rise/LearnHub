@@ -26,7 +26,7 @@ To run the LearnHub backend locally, follow these steps:
 
 ## Usage
 
-- Access the API at `http://localhost:8080`
+- Access the API at `http://localhost:8084`
 
 ## Contributing
 
