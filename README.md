@@ -1,6 +1,6 @@
 # LearnHub
 
-[![LearnHub Logo](logo.png)]("D:\learnhub-high-resolution-logo-transparent.png")
+[![LearnHub Logo](logo.png)]("https://drive.google.com/file/d/1Qgwwf246fNcJHFjI1yYuYNP8cj33PH4D/view?usp=sharing")
 
 ## Description
 
