@@ -546,7 +546,7 @@ public class UserV1Controller {
         return userList.get(0);
     }
 
-
+// Todo: Avatars
     @PostMapping(value = "/v1/avatar",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<ApiResponse<Object>> uploadAvatar(Principal principal, @RequestParam("file") MultipartFile file) {
         try {
@@ -573,7 +573,7 @@ public class UserV1Controller {
         }
     }
 
-
+// Todo: Add courseManager
     @PostMapping("/v1/addCourseManage")
     ResponseEntity<ApiResponse<UserResponse>> addCourseManageUser(Principal principal, @RequestBody AdminAddCourseManagerRequest request) {
         try {
@@ -616,7 +616,7 @@ public class UserV1Controller {
     }
 
 
-
+// Todo: Change email ( only admin)
     @PostMapping("/v1/changeEmail")
     ResponseEntity<ApiResponse<CommonStatusResponse>> requestToChangeEmail(Principal principal, @Validated @RequestBody AdminRequestToChangeEmailRequest request) {
         try {
@@ -668,7 +668,7 @@ public class UserV1Controller {
     }
 
 
-
+    // Todo: Verify email change
     @PostMapping("/v1/verifyEmailChange")
     ResponseEntity<ApiResponse<UserResponse>> verifyEmailChange(Principal principal, @Validated @RequestBody AdminVerifyEmailChangeRequest request) {
         try {
@@ -716,6 +716,21 @@ public class UserV1Controller {
         }
     }
 
+    //TODO: GET List deleted user
+    @GetMapping("/v1/listDeleted")
+    ResponseEntity<ApiResponse<List<UserInfoResponse>>> listDeleteUser(){
+        try {
+            List<User> userList = userRepository.findAllByDeleted(true);
+            ApiResponse<List<UserInfoResponse>> response = new ApiResponse<List<UserInfoResponse>>().ok(userList.stream().map(UserInfoResponse::new).collect(Collectors.toList()));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error: {}", e.getLocalizedMessage());
+            throw new BusinessException(ErrorMessage.USER_GET_FAIL);
+        }
+
+    }
 
 
 
