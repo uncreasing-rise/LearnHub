@@ -33,7 +33,7 @@ public class ServiceOfImage {
                 // Construct the public URL for the image file
                 // Create and save the image entity to the database
                 Image image = new Image();
-                image.setImageUrl(imageUrl);
+                image.setImageUrl(constructFileUrl(imageUrl));
                 imageRepository.save(image);
 
                 return imageUrl;

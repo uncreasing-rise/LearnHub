@@ -44,27 +44,6 @@ public class ServiceOfAnswer implements IServiceOfAnswer {
     }
 
     @Transactional
-    public void updateAnswer(Question existingQuestion, AnswerDTO answerDTO) {
-        try {
-            Optional<Answer> optionalAnswer = answerRepository.findById(answerDTO.getAnswerId());
-            if (optionalAnswer.isPresent()) {
-                Answer existingAnswer = optionalAnswer.get();
-                // Update answer properties
-                existingAnswer.setText(answerDTO.getAnswerText());
-                existingAnswer.setCorrect(answerDTO.getIsCorrect());
-                existingAnswer.setQuestion(existingQuestion);
-                answerRepository.save(existingAnswer);
-            } else {
-                throw new IllegalArgumentException("Answer not found for ID: " + answerDTO.getAnswerId());
-            }
-        } catch (Exception e) {
-            // Handle update failure
-            e.printStackTrace();
-            throw new RuntimeException("Failed to update answer: " + e.getMessage());
-        }
-    }
-
-    @Transactional
     public Answer createAnswerToQuestion(Integer questionId, AnswerDTO answerDTO) {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new IllegalArgumentException("Question not found for ID: " + questionId));

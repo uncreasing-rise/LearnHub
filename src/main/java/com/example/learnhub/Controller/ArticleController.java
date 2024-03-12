@@ -8,8 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-@CrossOrigin(origins = "*", maxAge = 3600)
-
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/articles")
 public class ArticleController {
@@ -21,21 +20,45 @@ public class ArticleController {
         this.serviceOfArticle = serviceOfArticle;
     }
 
-    @PutMapping("/update/{articleId}")
-    public ResponseEntity<Article> updateArticle(
+    @PutMapping("/update/{articleId}/file")
+    public ResponseEntity<Article> updateArticleFile(
             @PathVariable("articleId") Integer articleId,
-            @RequestParam("articleFile") MultipartFile articleFile,
-            @RequestBody ArticleDTO articleDTO
+            @RequestPart("articleFile") MultipartFile articleFile
     ) {
         try {
-            Article updatedArticle = serviceOfArticle.updateArticle(articleId, articleFile, articleDTO);
+            Article updatedArticle = serviceOfArticle.updateArticleFile(articleId, articleFile);
             return ResponseEntity.ok(updatedArticle);
         } catch (IllegalArgumentException e) {
             // Handle invalid input or article not found
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            // Handle other exceptions
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @PutMapping("/update/{articleId}/content")
+    public ResponseEntity<Article> updateArticleContent(
+            @PathVariable("articleId") Integer articleId,
+            @RequestBody ArticleDTO articleDTO
+    ) {
+        try {
+            Article updatedArticle = serviceOfArticle.updateArticleContent(articleId, articleDTO);
+            return ResponseEntity.ok(updatedArticle);
+        } catch (IllegalArgumentException e) {
+            // Handle invalid input or article not found
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            // Handle other exceptions
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
 
     @PostMapping("/{sectionId}")
     public ResponseEntity<Article> createArticleToSection(

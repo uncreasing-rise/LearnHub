@@ -98,41 +98,65 @@ public class ServiceOfArticle implements IServiceOfArticle {
     }
 
     @Transactional
-    public Article updateArticle(int articleId, MultipartFile articleFile, ArticleDTO articleDTO) {
-        // Check if the file and DTO are valid
-        if (articleFile == null || articleDTO == null) {
-            throw new IllegalArgumentException("Invalid article file or DTO provided");
-        }
-
-        // Check if the file is a valid article file
-        if (!isArticleFile(articleFile)) {
-            throw new IllegalArgumentException("File is not a valid article file");
-        }
-
+    public Article updateArticleFile(int articleId, MultipartFile articleFile) {
         try {
-            // Upload the article file to GCS and get the file path
-            String articleFilePath = serviceOfFile.uploadFile(articleFile);
-
             // Retrieve the article by its ID
             Optional<Article> optionalArticle = articleRepository.findById(articleId);
             if (optionalArticle.isPresent()) {
                 Article existingArticle = optionalArticle.get();
-                // Update article properties
-                existingArticle.setSection(articleDTO.getSection()); // Set the section ID from DTO
-                existingArticle.setArticleUrl(constructFileUrl(articleFilePath)); // Set the file path
-                existingArticle.setTitle(articleDTO.getTitle()); // Set title from the DTO
+
+                // Check if the file is provided and is a valid article file
+                if (articleFile != null && isArticleFile(articleFile)) {
+                    // Upload the article file to GCS and get the file path
+                    String articleFilePath = serviceOfFile.uploadFile(articleFile);
+                    // Update the article URL with the new file path
+                    existingArticle.setArticleUrl(constructFileUrl(articleFilePath));
+                } else {
+                    throw new IllegalArgumentException("Invalid or missing article file");
+                }
+
                 // Save the updated article
-                articleRepository.save(existingArticle);
+                return articleRepository.save(existingArticle);
             } else {
                 throw new IllegalArgumentException("Article not found for ID: " + articleId);
             }
         } catch (IOException e) {
             // Handle upload failure
             e.printStackTrace();
-            throw new RuntimeException("Failed to update article: " + e.getMessage());
+            throw new RuntimeException("Failed to update article file: " + e.getMessage());
         }
-        return null;
     }
+
+    @Transactional
+    public Article updateArticleContent(int articleId, ArticleDTO articleDTO) {
+        try {
+            // Retrieve the article by its ID
+            Optional<Article> optionalArticle = articleRepository.findById(articleId);
+            if (optionalArticle.isPresent()) {
+                Article existingArticle = optionalArticle.get();
+
+                // Update article properties if new values are provided in the DTO
+                if (articleDTO.getSection() != null) {
+                    existingArticle.setSection(articleDTO.getSection());
+                }
+                if (articleDTO.getTitle() != null) {
+                    existingArticle.setTitle(articleDTO.getTitle());
+                }
+
+                // Save the updated article
+                return articleRepository.save(existingArticle);
+            } else {
+                throw new IllegalArgumentException("Article not found for ID: " + articleId);
+            }
+        } catch (Exception e) {
+            // Handle other exceptions
+            e.printStackTrace();
+            throw new RuntimeException("Failed to update article content: " + e.getMessage());
+        }
+    }
+
+
+
 
     public Article createArticleToSection(Integer sectionId, MultipartFile articleFile, ArticleDTO articleDTO) {
         // Kiểm tra xem phần (section) có tồn tại không

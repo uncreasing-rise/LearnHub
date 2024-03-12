@@ -6,6 +6,7 @@ import com.example.learnhub.Entity.Video;
 import com.example.learnhub.Repository.SectionRepository;
 import com.example.learnhub.Service.ServiceOfVideo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,18 +26,34 @@ public class VideoController {
         this.serviceOfVideo = serviceOfVideo;
         this.sectionRepository = sectionRepository;
     }
+    @PutMapping("/update/{videoId}/file")
+    public ResponseEntity<Video> updateVideoFile(
+            @PathVariable("videoId") Integer videoId,
+            @RequestPart("videoFile") MultipartFile videoFile
+    ) {
+        try {
+            Video updatedVideo = serviceOfVideo.updateVideoFile(videoId, videoFile);
+            return ResponseEntity.ok(updatedVideo);
+        } catch (IllegalArgumentException e) {
+            // Handle invalid input or video not found
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            // Handle other exceptions
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
-    @PutMapping("/update/{sectionId}/{videoId}")
-    public ResponseEntity<Video> updateVideo(
-            @PathVariable("sectionId") Integer sectionId,
-            @RequestParam("videoFile") MultipartFile videoFile,
+
+    @PutMapping("/update/{videoId}/content")
+    public ResponseEntity<Video> updateVideoContent(
+            @PathVariable("videoId") Integer videoId,
             @RequestBody VideoDTO videoDTO
     ) {
         try {
-            // Retrieve the section by ID
-            Section section = sectionRepository.findById(sectionId).orElseThrow(() -> new IllegalArgumentException("Section not found"));
-            // Update the video
-            Video updatedVideo = serviceOfVideo.updateVideo(section, videoFile, videoDTO);
+            // Update the video content
+            Video updatedVideo = serviceOfVideo.updateVideoContent(videoId, videoDTO);
             return ResponseEntity.ok(updatedVideo);
         } catch (IllegalArgumentException e) {
             // Handle invalid input or video not found

@@ -106,28 +106,44 @@ public class ServiceOfVideo implements IServiceOfVideo {
 
 
     @Transactional
-    public Video updateVideo(Section section, MultipartFile videoFile, VideoDTO videoDTO) {
-        // Check if the file and DTO are valid
-        if (videoFile == null || videoDTO == null) {
-            throw new IllegalArgumentException("Invalid video file or DTO provided");
-        }
-
-        // Check if the file is a valid video file
-        if (!isVideoFile(videoFile)) {
-            throw new IllegalArgumentException("File is not a valid video file");
-        }
-
+    public Video updateVideoFile(int videoId, MultipartFile videoFile) {
         try {
-            // Upload the video file to GCS and get the file path
-            String videoFilePath = serviceOfFile.uploadFile(videoFile);
-
             // Retrieve the video by its ID
-            Optional<Video> optionalVideo = videoRepository.findById(videoDTO.getVideoId());
+            Optional<Video> optionalVideo = videoRepository.findById(videoId);
+            if (optionalVideo.isPresent()) {
+                Video existingVideo = optionalVideo.get();
+
+                // Check if the file is provided and is a valid video file
+                if (videoFile != null && isVideoFile(videoFile)) {
+                    // Upload the video file to GCS and get the file path
+                    String videoFilePath = serviceOfFile.uploadFile(videoFile);
+                    // Update the video URL with the new file path
+                    existingVideo.setVideoData(constructFileUrl(videoFilePath));
+                } else {
+                    throw new IllegalArgumentException("Invalid or missing video file");
+                }
+
+                // Save the updated video
+                return videoRepository.save(existingVideo);
+            } else {
+                throw new IllegalArgumentException("Video not found for ID: " + videoId);
+            }
+        } catch (IOException e) {
+            // Handle upload failure
+            e.printStackTrace();
+            throw new RuntimeException("Failed to update video file: " + e.getMessage());
+        }
+    }
+
+
+    @Transactional
+    public Video updateVideoContent(int videoId, VideoDTO videoDTO) {
+        try {
+            // Retrieve the video by its ID
+            Optional<Video> optionalVideo = videoRepository.findById(videoId);
             if (optionalVideo.isPresent()) {
                 Video existingVideo = optionalVideo.get();
                 // Update video properties
-                existingVideo.setSection(section); // Set the section ID
-                existingVideo.setVideoData(constructFileUrl(videoFilePath)); // Set the file path
                 existingVideo.setTitle(videoDTO.getTitle());
                 existingVideo.setDescription(videoDTO.getDescription());
                 existingVideo.setIsTrial(videoDTO.getIsTrial());
@@ -136,12 +152,13 @@ public class ServiceOfVideo implements IServiceOfVideo {
             } else {
                 throw new IllegalArgumentException("Video not found for ID: " + videoDTO.getVideoId());
             }
-        } catch (IOException e) {
-            // Handle upload failure
+        } catch (Exception e) {
+            // Handle exceptions
             e.printStackTrace();
-            throw new RuntimeException("Failed to update video: " + e.getMessage());
+            throw new RuntimeException("Failed to update video content: " + e.getMessage());
         }
     }
+
     public Video createVideoToSection(int sectionId, MultipartFile videoFile, VideoDTO videoDTO) {
         // Retrieve the section from the database
         Section section = sectionRepository.findById(sectionId)
