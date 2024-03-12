@@ -31,8 +31,6 @@ public class ServiceOfImage {
                 String imageUrl = serviceOfFile.uploadFile(imageFile);
 
                 // Construct the public URL for the image file
-                imageUrl = constructFileUrl(imageUrl);
-
                 // Create and save the image entity to the database
                 Image image = new Image();
                 image.setImageUrl(imageUrl);

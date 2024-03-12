@@ -213,8 +213,6 @@ public class UserV1Controller {
                 userUpdate.setFullName(request.getFullname());
             }
 
-
-
             if(StringUtils.isNotBlank(request.getImage())){
                 userUpdate.setImage(request.getImage());
             }
@@ -545,33 +543,39 @@ public class UserV1Controller {
         }
         return userList.get(0);
     }
-
-// Todo: Avatars
-    @PostMapping(value = "/v1/avatar",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/v1/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<ApiResponse<Object>> uploadAvatar(Principal principal, @RequestParam("file") MultipartFile file) {
         try {
             User user = getUserAvailable(principal.getName(), false);
-            if(Objects.nonNull(user.getImage()) && !user.getImage().equals("url")){
+
+            // Check if the user already has an image and delete it if it exists
+            if (Objects.nonNull(user.getImage()) && !user.getImage().equals("url")) {
                 try {
                     fileService.deleteFile(user.getImage());
-                } catch (Exception e){
-                    log.error("Can not delete file: {}" , user.getImage());
+                } catch (Exception e) {
+                    log.error("Failed to delete file: {}", user.getImage());
                 }
             }
-//            fileService.uploadFile(file);
+
+            // Save the uploaded image and get the URL
             String url = serviceOfImage.saveImage(file);
-            user.setImage(file.getOriginalFilename());
+
+            // Update the user's image with the URL
+            user.setImage(url);
             userRepository.save(user);
-//            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(FileUtils.getFileUrl(file.getOriginalFilename())),HttpStatus.OK);
-            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(url),HttpStatus.OK);
+
+            // Return the URL of the uploaded image in the response
+            return new ResponseEntity<>(new ApiResponse<>().ok(url), HttpStatus.OK);
         } catch (BusinessException e) {
+            // Rethrow BusinessException
             throw e;
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("Upload avatar failed with error {}", e.getLocalizedMessage());
+            // Log and handle unexpected exceptions
+            log.error("Upload avatar failed with error: {}", e.getMessage());
             throw new BusinessException(ErrorMessage.USER_UPLOAD_AVATAR_FAILED);
         }
     }
+
 
 // Todo: Add courseManager
     @PostMapping("/v1/addCourseManage")

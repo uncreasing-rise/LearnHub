@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ServiceOfFile implements IServiceOfFile {
@@ -55,12 +56,11 @@ public class ServiceOfFile implements IServiceOfFile {
 
     @Override
     public String uploadFile(MultipartFile file) throws IOException {
-        BlobId blobId = BlobId.of(bucketName, file.getOriginalFilename());
+        BlobId blobId = BlobId.of(bucketName, Objects.requireNonNull(file.getOriginalFilename()));
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType(file.getContentType())
                 .build();
         Blob blob = storage.create(blobInfo, file.getBytes());
-
         // Trả về đường link của tập tin đã tải lên
         return file.getOriginalFilename();
     }
