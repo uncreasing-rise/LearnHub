@@ -139,6 +139,7 @@ public class ServiceOfCourse {
         courseDTO.setCourseTitle(course.getCourseTitle());
         courseDTO.setCoursePrice(course.getCoursePrice());
         courseDTO.setLevel(course.getLevel());
+        courseDTO.setCategoryName(course.getCategory().getCategoryName());
         Double avgRating = courseRateRepository.avgCourseRateByCourseId(course.getCourseId());
         courseDTO.setAvgRating(avgRating != null ? avgRating : 0.0);
         return courseDTO;

@@ -29,5 +29,6 @@ public class ResponeCourseDTO {
     private List<ResponeSectionDTO> sections = new ArrayList<>();
     private double avgRating;
     private int countRating;
+    private String CategoryName;
 
 }
