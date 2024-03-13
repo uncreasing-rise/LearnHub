@@ -22,11 +22,9 @@ import com.example.learnhub.security.UserDetailsImpl;
 import com.example.learnhub.security.jwt.JWTUtils;
 import com.example.learnhub.security.utils.AESUtils;
 import com.example.learnhub.security.utils.RandomStringGenerator;
-import com.example.learnhub.utils.FileUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,21 +46,16 @@ import java.util.stream.Collectors;
 @CrossOrigin("*")
 public class UserV1Controller {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
-    @Autowired
-    private EmailSenderService emailSenderService;
+    private final EmailSenderService emailSenderService;
 
 
-    @Autowired
-    private ServiceOfFile fileService;
+    private final ServiceOfFile fileService;
 
-    @Autowired
-    private ServiceOfImage serviceOfImage;
+    private final ServiceOfImage serviceOfImage;
 
     @Value("${aes.key}")
     private String key;
@@ -70,8 +63,16 @@ public class UserV1Controller {
     @Value("${spring.mail.username}")
     private String mailFrom;
 
+    public UserV1Controller(UserRepository userRepository, RoleRepository roleRepository, EmailSenderService emailSenderService, ServiceOfFile fileService, ServiceOfImage serviceOfImage) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.emailSenderService = emailSenderService;
+        this.fileService = fileService;
+        this.serviceOfImage = serviceOfImage;
+    }
+
     record UserChange(String emailOrigin, String emailChange,String otp) {}
-    private static Map<String, UserChange> map = new HashMap<String, UserChange>();
+    private static final Map<String, UserChange> map = new HashMap<>();
 
     //TODO: Register
     @PostMapping("/v1/register")
@@ -88,11 +89,6 @@ public class UserV1Controller {
             if(Objects.nonNull(user)){
                 throw new BusinessException(ErrorMessage.USER_EMAIL_EXISTED);
             }
-
-
-           // if(Boolean.TRUE.equals(user.getEnable())) {
-               // throw new BusinessException(ErrorMessage.USER_ENABLED);
-           // }
 
             List<Role> roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.STUDENT.name());
             String randomString = RandomStringGenerator.generateRandomString(6);
@@ -137,6 +133,7 @@ public class UserV1Controller {
         try {
             User user = getUserAvailable(request.getEmail(), false);
 
+            assert user != null;
             if(!request.getOtp().equals(user.getStringRandom())){
                 throw new BusinessException(ErrorMessage.USER_OTP_NOT_MATCH);
             }
@@ -237,6 +234,7 @@ public class UserV1Controller {
         try {
             User user = getUserAvailable(request.getEmail(),false);
             String randomString = RandomStringGenerator.generateRandomString(6);
+            assert user != null;
             user.setStringRandom(randomString);
             user = userRepository.save(user);
             // send email:
@@ -269,13 +267,14 @@ public class UserV1Controller {
         try {
             User user = getUserAvailable(request.getEmail(), false);
 
+            assert user != null;
             if(!request.getOtp().equals(user.getStringRandom())){
                 throw new BusinessException(ErrorMessage.USER_OTP_NOT_MATCH);
             }
 
             user.setStringRandom("");
             user.setUserPassword(AESUtils.encrypt(request.getNewPassword(),key));
-            user = userRepository.save(user);
+            userRepository.save(user);
             ApiResponse<CommonStatusResponse> response = new ApiResponse<CommonStatusResponse>().ok(new CommonStatusResponse(true));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (BusinessException e) {
@@ -292,6 +291,7 @@ public class UserV1Controller {
     ResponseEntity<ApiResponse<CommonStatusResponse>> resetPassword(@RequestBody UserResetPasswordRequest request) {
         try {
             User user = getUserAvailable(request.getEmail(), false);
+            assert user != null;
             String newPassword = user.getEmail().split("@")[0] + "123#";
             user.setUserPassword(AESUtils.encrypt(newPassword,key));
             user = userRepository.save(user);
@@ -325,6 +325,7 @@ public class UserV1Controller {
     ResponseEntity<ApiResponse<UserResponse>> getInfoUser(Principal principal){
         try {
             User user = getUserAvailable(principal.getName(), false);
+            assert user != null;
             Role role = roleRepository.findById(user.getRoleId()).orElse(null);
             ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,role));
             return new ResponseEntity<>(response, HttpStatus.OK);
@@ -376,6 +377,7 @@ public class UserV1Controller {
     @SneakyThrows
     private ApiResponse<UserLoginResponse> loginUserRole(String email, String password, Role roleExpect) {
         User user = getUserAvailable(email,false);
+        assert user != null;
         if(!user.getEnable()){
             throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
         }
@@ -543,32 +545,40 @@ public class UserV1Controller {
         }
         return userList.get(0);
     }
-    // Todo: Avatars
-    @PostMapping(value = "/v1/avatar",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/v1/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<ApiResponse<Object>> uploadAvatar(Principal principal, @RequestParam("file") MultipartFile file) {
         try {
             User user = getUserAvailable(principal.getName(), false);
-            if(Objects.nonNull(user.getImage()) && !user.getImage().equals("url")){
+
+            // Check if the user already has an image and delete it if it exists
+            assert user != null;
+            if (Objects.nonNull(user.getImage()) && !user.getImage().equals("url")) {
                 try {
                     fileService.deleteFile(user.getImage());
-                } catch (Exception e){
-                    log.error("Can not delete file: {}" , user.getImage());
+                } catch (Exception e) {
+                    log.error("Failed to delete file: {}", user.getImage());
                 }
             }
-//            fileService.uploadFile(file);
+
+            // Save the uploaded image and get the URL
             String url = serviceOfImage.saveImage(file);
-            user.setImage(file.getOriginalFilename());
+
+            // Update the user's image with the URL
+            user.setImage(url);
             userRepository.save(user);
-//            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(FileUtils.getFileUrl(file.getOriginalFilename())),HttpStatus.OK);
-            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(url),HttpStatus.OK);
+
+            // Return the URL of the uploaded image in the response
+            return new ResponseEntity<>(new ApiResponse<>().ok(url), HttpStatus.OK);
         } catch (BusinessException e) {
+            // Rethrow BusinessException
             throw e;
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error("Upload avatar failed with error {}", e.getLocalizedMessage());
+            // Log and handle unexpected exceptions
+            log.error("Upload avatar failed with error: {}", e.getMessage());
             throw new BusinessException(ErrorMessage.USER_UPLOAD_AVATAR_FAILED);
         }
     }
+
 
 // Todo: Add courseManager
     @PostMapping("/v1/addCourseManage")
@@ -637,6 +647,7 @@ public class UserV1Controller {
             String randomString = RandomStringGenerator.generateRandomString(6);
 
 
+            assert user != null;
             UserChange userChange = new UserChange(user.getEmail(), request.getEmailChange(),randomString);
             map.put(request.getEmailChange(), userChange);
 
