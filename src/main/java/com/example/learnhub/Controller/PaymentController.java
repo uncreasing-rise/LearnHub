@@ -21,25 +21,32 @@ import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static java.lang.System.out;
 
 
 @RestController
+@CrossOrigin("*")
 public class PaymentController {
 
-    @GetMapping("/pay") // /{price}/{id}
-    public String getPay() throws UnsupportedEncodingException{ //@PathParam("price") Long price, @PathParam("id") Integer contractId
+    @GetMapping("/pay/{total}/{userId}") // /{total}/{userId}
+    public String getPay(@PathVariable("total") Double total, @PathVariable("userId") Integer userId) throws UnsupportedEncodingException{ //@PathParam("price") Long price, @PathParam("id") Integer contractId
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
         String orderType = "other";
-//        long amount = (price != null) ? price : 0; // Nếu price không null, sử dụng giá trị của nó, ngược lại sử dụng 0
-//        amount *= 100; // Chuyển đổi sang đơn vị tiền tệ
-        long amount = 100000 * 100;
+        if (total == null) {
+
+            return "Total is null. Please provide a valid total value.";
+        }
+        if (userId == null) {
+            return "UserId is null. Please provide a valid user ID.";
+        }
+        //long amount = 100000 * 100;
+       // double amount = total * 100;
+        long amount = (long) (total * 100);
+
         String bankCode = "NCB";
 
         String vnp_TxnRef = Config.getRandomNumber(8);
@@ -56,7 +63,7 @@ public class PaymentController {
 
         vnp_Params.put("vnp_BankCode", bankCode);
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef + " | Total: " + total + " | UserId: " + userId);
         vnp_Params.put("vnp_OrderType", orderType);
 
         vnp_Params.put("vnp_Locale", "vn");

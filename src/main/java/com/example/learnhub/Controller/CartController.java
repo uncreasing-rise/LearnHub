@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@CrossOrigin("*")
 @RequestMapping("/cart")
 public class CartController {
     @Autowired
@@ -105,4 +106,20 @@ public class CartController {
         return ResponseEntity.ok("Delete Successfully");
 
     }
+    @GetMapping("/getTotal/{userId}")
+    public ResponseEntity<Double> getTotalByUserId(@PathVariable Integer userId) {
+        List<Cart> userCarts = cartRepository.findByUserUserId(userId);
+        if (userCarts.isEmpty()) {
+            return ResponseEntity.ok(0.0); // Trả về 0 nếu không có giỏ hàng
+        } else {
+            Cart curCart = userCarts.get(0);
+            return ResponseEntity.ok(curCart.getTotal()); // Trả về tổng số tiền của giỏ hàng
+        }
+    }
+
+    @GetMapping("/getUserId/{userId}")
+    public ResponseEntity<Integer> getUserIdByCartId(@PathVariable Integer userId) {
+        return ResponseEntity.ok(userId); // Trả về userId của người dùng
+    }
+
 }
