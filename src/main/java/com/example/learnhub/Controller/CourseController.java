@@ -94,7 +94,7 @@ public class CourseController {
     public ResponseEntity<List<ResponeCourseDTO>> searchCoursesByKeyword(@RequestParam String keyword) {
         List<Course> courses = serviceOfCourse.findCoursesByKeyword(keyword);
         List<ResponeCourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .map(serviceOfCourse::fromCourseToListResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
@@ -104,7 +104,7 @@ public class CourseController {
     public ResponseEntity<List<ResponeCourseDTO>> getCoursesByCategory(@PathVariable String category) {
         List<Course> courses = serviceOfCourse.getCoursesByCategory(category);
         List<ResponeCourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .map(serviceOfCourse::fromCourseToListResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
@@ -114,7 +114,7 @@ public class CourseController {
     public ResponseEntity<List<ResponeCourseDTO>> getCoursesByPriceHigher() {
         List<Course> courses = serviceOfCourse.getCoursesByPriceHigher();
         List<ResponeCourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .map(serviceOfCourse::fromCourseToListResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
@@ -124,7 +124,7 @@ public class CourseController {
     public ResponseEntity<List<ResponeCourseDTO>> getCoursesByPriceLower() {
         List<Course> courses = serviceOfCourse.getCoursesByPriceLower();
         List<ResponeCourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .map(serviceOfCourse::fromCourseToListResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
@@ -134,7 +134,7 @@ public class CourseController {
     public ResponseEntity<List<ResponeCourseDTO>> getCoursesByDateNew() {
         List<Course> courses = serviceOfCourse.getCoursesByDateNew();
         List<ResponeCourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .map(serviceOfCourse::fromCourseToListResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
@@ -144,7 +144,7 @@ public class CourseController {
     public ResponseEntity<List<ResponeCourseDTO>> getCoursesByDateOld() {
         List<Course> courses = serviceOfCourse.getCoursesByDateOld();
         List<ResponeCourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .map(serviceOfCourse::fromCourseToListResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
