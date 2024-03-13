@@ -27,8 +27,10 @@ public class Payment {
     @Column(name = "BankCode")
     private String bankCode;
 
-    @Column(name = "OrderDetail")
-    private String orderDetail;
+
+
+    @Column(name = "OrderInfo")
+    private String OrderInfo;
 
 
 
@@ -65,7 +67,11 @@ public class Payment {
         this.bankCode = bankCode;
     }
 
-    public String getBankCode() {
-        return bankCode;
-    }
+    public String getBankCode() {return bankCode;}
+
+    public void setOrderInfo(String orderInfo) {this.OrderInfo = orderInfo;}
+    public String getOrderInfo() {return OrderInfo;}
+
+
+
 }

@@ -128,14 +128,15 @@ public class PaymentController {
     public ResponseEntity<?> transactionStatusDTO(
             @RequestParam(value = "vnp_Amount") String amount,
             @RequestParam(value = "vnp_BankCode") String bankCode,
-            @RequestParam(value = "vnp_OrderInfo") String order,
+            @RequestParam(value = "vnp_OrderInfo") String orderInfo,
             @RequestParam(value = "vnp_ResponseCode") String responseCode
+
     ) {
         TransactionStatusDTO transactionStatusDTO = new TransactionStatusDTO();
         if (responseCode.equals("00")) {
             transactionStatusDTO.setStatus("Ok");
             transactionStatusDTO.setMessage("Successfully");
-            transactionStatusDTO.setData("Amount: " + amount + ", Bank Code: " + bankCode + ", Order: " + order);
+            transactionStatusDTO.setData("Amount: " + amount + ", Bank Code: " + bankCode + ", OrderInfo: " + orderInfo);
 
             // Create Payment entity and save it
             Payment payment = new Payment();
@@ -143,6 +144,7 @@ public class PaymentController {
             payment.setPaymentTime(new Date());
             payment.setPaymentStatus("Success"); // Assuming it's successful by default
             payment.setBankCode(bankCode);
+            payment.setOrderInfo(orderInfo);
             // You can set other fields as needed
 
             serviceOfPayment.savePayment(payment); // Save payment
@@ -150,6 +152,17 @@ public class PaymentController {
             transactionStatusDTO.setStatus("Failed");
             transactionStatusDTO.setMessage("Payment Failed");
             transactionStatusDTO.setData("Error Code: " + responseCode);
+
+            // Create Payment entity and save it
+            Payment payment = new Payment();
+            payment.setPaymentAmount(new BigDecimal(amount));
+            payment.setPaymentTime(new Date());
+            payment.setPaymentStatus("Failed"); // Assuming it's successful by default
+            payment.setBankCode(bankCode);
+            payment.setOrderInfo(orderInfo);
+            // You can set other fields as needed
+
+            serviceOfPayment.savePayment(payment);// Save payment
         }
 
         Map<String, String> response = new HashMap<>();
