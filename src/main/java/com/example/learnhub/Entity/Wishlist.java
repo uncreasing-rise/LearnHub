@@ -1,5 +1,6 @@
 package com.example.learnhub.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -19,6 +20,7 @@ public class Wishlist {
     @ManyToOne
     @JoinColumn(name = "CourseID")
     private Course course;
+
 
     // Constructors, getters, setters, and other methods as needed
 }

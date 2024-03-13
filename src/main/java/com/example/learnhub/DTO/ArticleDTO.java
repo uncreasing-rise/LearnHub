@@ -1,13 +1,16 @@
 package com.example.learnhub.DTO;
 
+import com.example.learnhub.Entity.Section;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class ArticleDTO {
     private Integer articleId;
     private String articleData;
-    private Integer sectionId;
-    private String articleTitle;
-    private MultipartFile articleFile; // New field to store article file
+    private Section section;
+    private String Title;
 }

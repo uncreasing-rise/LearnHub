@@ -7,58 +7,106 @@ import com.example.learnhub.Repository.AnswerRepository;
 import com.example.learnhub.Repository.QuestionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ServiceOfAnswer {
-
-    private final QuestionRepository questionRepository;
+public class ServiceOfAnswer implements IServiceOfAnswer {
     private final AnswerRepository answerRepository;
+    private final QuestionRepository questionRepository;
 
     @Autowired
-    public ServiceOfAnswer(QuestionRepository questionRepository, AnswerRepository answerRepository) {
-        this.questionRepository = questionRepository;
+    public ServiceOfAnswer(AnswerRepository answerRepository, QuestionRepository questionRepository) {
         this.answerRepository = answerRepository;
+        this.questionRepository = questionRepository;
+    }
+
+    @Override
+    public Answer getAnswerById(int id, Question question) {
+        return answerRepository.findByIdAndQuestion(id, question);
     }
 
     @Transactional
-    public AnswerDTO createAnswer(AnswerDTO answerDTO) {
-        validateAnswerDTO(answerDTO); // Validate the AnswerDTO
+    public List<Answer> convertToAnswerEntities(List<AnswerDTO> answerDTOS, Question question) {
+        List<Answer> answers = new ArrayList<>();
 
-        Optional<Question> optionalQuestion = questionRepository.findById(answerDTO.getQuestionId());
-        if (optionalQuestion.isPresent()) {
-            Question question = optionalQuestion.get();
-            Answer answer = mapAnswerDTOToEntity(answerDTO, question); // Pass the found question
-            Answer savedAnswer = answerRepository.save(answer);
-            return mapAnswerEntityToDTO(savedAnswer);
-        } else {
-            throw new RuntimeException("Question not found");
+        for (AnswerDTO answerDTO : answerDTOS) {
+            Answer answer = new Answer();
+            answer.setText(answerDTO.getAnswerText());
+            answer.setCorrect(answerDTO.getIsCorrect());
+            answer.setQuestion(question);
+            answers.add(answer);
+        }
+        return answerRepository.saveAll(answers);
+    }
+
+    @Transactional
+    public void updateAnswer(Question existingQuestion, AnswerDTO answerDTO) {
+        try {
+            Optional<Answer> optionalAnswer = answerRepository.findById(answerDTO.getAnswerId());
+            if (optionalAnswer.isPresent()) {
+                Answer existingAnswer = optionalAnswer.get();
+                // Update answer properties
+                existingAnswer.setText(answerDTO.getAnswerText());
+                existingAnswer.setCorrect(answerDTO.getIsCorrect());
+                existingAnswer.setQuestion(existingQuestion);
+                answerRepository.save(existingAnswer);
+            } else {
+                throw new IllegalArgumentException("Answer not found for ID: " + answerDTO.getAnswerId());
+            }
+        } catch (Exception e) {
+            // Handle update failure
+            e.printStackTrace();
+            throw new RuntimeException("Failed to update answer: " + e.getMessage());
         }
     }
 
-    private void validateAnswerDTO(AnswerDTO answerDTO) {
-        if (answerDTO.getQuestionId() == null) {
-            throw new IllegalArgumentException("Question ID cannot be null");
-        }
-        // Add more validation if needed
-    }
+    @Transactional
+    public Answer createAnswerToQuestion(Integer questionId, AnswerDTO answerDTO) {
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new IllegalArgumentException("Question not found for ID: " + questionId));
 
-    private Answer mapAnswerDTOToEntity(AnswerDTO answerDTO, Question question) {
         Answer answer = new Answer();
-        answer.setQuestion(question);
         answer.setText(answerDTO.getAnswerText());
         answer.setCorrect(answerDTO.getIsCorrect());
-        return answer;
+        answer.setQuestion(question);
+        return answerRepository.save(answer);
     }
 
-    private AnswerDTO mapAnswerEntityToDTO(Answer answer) {
-        AnswerDTO answerDTO = new AnswerDTO();
-        answerDTO.setAnswerId(answer.getId());
-        answerDTO.setQuestionId(answer.getQuestion().getId());
-        answerDTO.setAnswerText(answer.getText());
-        answerDTO.setIsCorrect(answer.isCorrect());
-        return answerDTO;
+    @Transactional
+    public boolean deleteAnswerFromQuestion(Integer questionId, Integer answerId) {
+        try {
+            // Kiểm tra xem câu hỏi có tồn tại không
+            Optional<Question> optionalQuestion = questionRepository.findById(questionId);
+            if (optionalQuestion.isPresent()) {
+                Question question = optionalQuestion.get();
+
+                // Lấy câu trả lời cần xóa từ câu hỏi
+                Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
+                if (optionalAnswer.isPresent()) {
+                    Answer answer = optionalAnswer.get();
+
+                    // Kiểm tra xem câu trả lời có thuộc câu hỏi được chỉ định không
+                    if (answer.getQuestion().equals(question)) {
+                        // Xóa câu trả lời
+                        answerRepository.delete(answer);
+                        return true;
+                    } else {
+                        throw new IllegalArgumentException("The provided answer does not belong to the specified question.");
+                    }
+                } else {
+                    throw new IllegalArgumentException("Answer not found for ID: " + answerId);
+                }
+            } else {
+                throw new IllegalArgumentException("Question not found for ID: " + questionId);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to delete answer from question: " + e.getMessage());
+        }
     }
+
 }

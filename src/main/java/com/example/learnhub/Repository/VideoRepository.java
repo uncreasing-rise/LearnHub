@@ -5,9 +5,10 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+@Repository
 public interface VideoRepository extends JpaRepository<Video,Integer> {
 
 //    List<Video> findAllBySectionId(int sectionId);
@@ -19,6 +20,7 @@ public interface VideoRepository extends JpaRepository<Video,Integer> {
 
     @Modifying
     @Transactional
-    @Query("delete from Video v where v.sectionID = ?1")
-    int deleteVideosBySectionID(int sectionID);
+    @Query("delete from Video v where v.section.sectionId = ?1")
+    int deleteBySection_SectionId(int sectionID);
+
 }

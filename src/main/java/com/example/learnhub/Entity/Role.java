@@ -1,7 +1,6 @@
 package com.example.learnhub.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,14 +11,12 @@ import lombok.NoArgsConstructor;
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "roleId")
+    @Column(name = "role_id")
 
     private Integer roleId;  // Corrected the property name
 
-    @Column(name = "RoleName")
+    @Column(name = "role_name")
     private String roleName;
 
-    public Role(String name ) {
-        this.roleName = name;
-    }
+
 }

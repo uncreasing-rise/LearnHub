@@ -1,6 +1,7 @@
 package com.example.learnhub.Entity;
 
-import com.google.api.client.util.PemReader;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,16 +14,20 @@ public class Video {
     @Column(name = "VideoID")
     private Integer videoId;
 
-    @Column(name = "VideoData")
+    @Column(name = "Title")
+    private String title;
+
+    @Column(name = "Description")
+    private String description;
+
+    @Column(name = "video_data")
     private String videoData;
 
-    @Column(name = "VideoScript")
-    private String videoScript;
-
-    @Column(name = "isTrial")
+    @Column(name = "is_trial")
     private Boolean isTrial;
 
-    @Column(name = "SectionID")
-    private Integer sectionID;
-
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "SectionID") // Many-to-One association with Section
+    private Section section;
 }

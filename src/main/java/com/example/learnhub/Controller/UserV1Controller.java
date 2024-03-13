@@ -15,20 +15,22 @@ import com.example.learnhub.Exceptions.UnauthorizeException;
 import com.example.learnhub.Repository.RoleRepository;
 import com.example.learnhub.Repository.UserRepository;
 import com.example.learnhub.Service.ServiceOfFile;
+import com.example.learnhub.Service.ServiceOfImage;
 import com.example.learnhub.mailv2.model.Mail;
 import com.example.learnhub.mailv2.service.EmailSenderService;
 import com.example.learnhub.security.UserDetailsImpl;
 import com.example.learnhub.security.jwt.JWTUtils;
 import com.example.learnhub.security.utils.AESUtils;
 import com.example.learnhub.security.utils.RandomStringGenerator;
+import com.example.learnhub.utils.FileUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,12 +61,17 @@ public class UserV1Controller {
     @Autowired
     private ServiceOfFile fileService;
 
+    @Autowired
+    private ServiceOfImage serviceOfImage;
+
     @Value("${aes.key}")
     private String key;
 
     @Value("${spring.mail.username}")
     private String mailFrom;
 
+    record UserChange(String emailOrigin, String emailChange,String otp) {}
+    private static Map<String, UserChange> map = new HashMap<String, UserChange>();
 
     //TODO: Register
     @PostMapping("/v1/register")
@@ -91,7 +98,6 @@ public class UserV1Controller {
             String randomString = RandomStringGenerator.generateRandomString(6);
             user = new User()
                 .setEmail(request.getEmail())
-                .setFacebook(request.getFacebook())
                 .setFullName(request.getFullname())
                 .setUserPassword(AESUtils.encrypt(request.getPassword(),key))
                 .setRoleId(roles.get(0).getRoleId())
@@ -205,10 +211,6 @@ public class UserV1Controller {
 
             if(StringUtils.isNotBlank(request.getFullname())){
                 userUpdate.setFullName(request.getFullname());
-            }
-
-            if(StringUtils.isNotBlank(request.getFacebook())){
-                userUpdate.setFacebook(request.getFacebook());
             }
 
             if(StringUtils.isNotBlank(request.getImage())){
@@ -471,6 +473,13 @@ public class UserV1Controller {
                 throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
             }
 
+
+            Role roleUserDisabled = roleRepository.findById(user.getRoleId()).orElse(null);
+
+            if(Objects.nonNull(roleUserDisabled) && roleUserDisabled.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_CAN_NOT_DELETE_ADMIN);
+            }
+
             user.setDeleted(true);
             user = userRepository.save(user);
             ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,roleRepository.findById(user.getRoleId()).orElse(null)));
@@ -534,23 +543,24 @@ public class UserV1Controller {
         }
         return userList.get(0);
     }
-
-
-    @PutMapping("/v1/avatar")
+    // Todo: Avatars
+    @PostMapping(value = "/v1/avatar",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<ApiResponse<Object>> uploadAvatar(Principal principal, @RequestParam("file") MultipartFile file) {
         try {
             User user = getUserAvailable(principal.getName(), false);
-            if(!user.getImage().equals("url")){
+            if(Objects.nonNull(user.getImage()) && !user.getImage().equals("url")){
                 try {
                     fileService.deleteFile(user.getImage());
                 } catch (Exception e){
                     log.error("Can not delete file: {}" , user.getImage());
                 }
             }
-            fileService.uploadFile(file);
+//            fileService.uploadFile(file);
+            String url = serviceOfImage.saveImage(file);
             user.setImage(file.getOriginalFilename());
             userRepository.save(user);
-            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(user.getImage()),HttpStatus.OK);
+//            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(FileUtils.getFileUrl(file.getOriginalFilename())),HttpStatus.OK);
+            return new ResponseEntity<ApiResponse<Object>>(new ApiResponse<>().ok(url),HttpStatus.OK);
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -559,5 +569,166 @@ public class UserV1Controller {
             throw new BusinessException(ErrorMessage.USER_UPLOAD_AVATAR_FAILED);
         }
     }
+
+// Todo: Add courseManager
+    @PostMapping("/v1/addCourseManage")
+    ResponseEntity<ApiResponse<UserResponse>> addCourseManageUser(Principal principal, @RequestBody AdminAddCourseManagerRequest request) {
+        try {
+            User userRequest = getUserAvailable(principal.getName(), true);
+            if(Objects.isNull(userRequest)){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            Role role = roleRepository.findById(userRequest.getRoleId()).orElse(null);
+            if(Objects.isNull(role) || !role.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            User userCreated = getUserAvailable(request.getEmail(),true);
+            if(Objects.nonNull(userCreated)){
+                throw new BusinessException(ErrorMessage.USER_EMAIL_EXISTED);
+            }
+
+            List<Role> roles = roleRepository.findByRoleName(com.example.learnhub.security.Role.COURSEMANAGER.name());
+
+            userCreated = new User()
+                    .setEmail(request.getEmail())
+                    .setFullName(request.getFullname())
+                    .setUserPassword(AESUtils.encrypt(request.getPassword(),key))
+                    .setRoleId(roles.get(0).getRoleId())
+                    .setEnable(Boolean.TRUE)
+                    .setImage("url")
+                    .setToken("token")
+                    .setDeleted(false)
+                    .setStringRandom("");
+            userCreated = userRepository.save(userCreated);
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(userCreated,roles.get(0)));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorMessage.USER_CREATE_FAIL);
+        }
+    }
+
+
+// Todo: Change email ( only admin)
+    @PostMapping("/v1/changeEmail")
+    ResponseEntity<ApiResponse<CommonStatusResponse>> requestToChangeEmail(Principal principal, @Validated @RequestBody AdminRequestToChangeEmailRequest request) {
+        try {
+            User userRequest = getUserAvailable(principal.getName(), true);
+            if(Objects.isNull(userRequest)){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            Role role = roleRepository.findById(userRequest.getRoleId()).orElse(null);
+            if(Objects.isNull(role) || !role.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            User user = getUserAvailable(request.getEmailOrigin(),false);
+
+            User userChanged = getUserAvailable(request.getEmailChange(),true);
+            if(Objects.nonNull(userChanged)){
+                throw new BusinessException(ErrorMessage.USER_EMAIL_EXISTED);
+            }
+
+            String randomString = RandomStringGenerator.generateRandomString(6);
+
+
+            UserChange userChange = new UserChange(user.getEmail(), request.getEmailChange(),randomString);
+            map.put(request.getEmailChange(), userChange);
+
+
+            // send email:
+            log.info("START... Sending email");
+            Mail mail = new Mail();
+            mail.setFrom(mailFrom);//replace with your desired email
+            mail.setTo(request.getEmailChange());//replace with your desired email
+            mail.setSubject("Email verify Leanhub to change email !");
+            Map<String, Object> model = new HashMap<>();
+            model.put("otp_value", randomString);
+            mail.setPros(model);
+            mail.setTemplate("index");
+            emailSenderService.sendEmail(mail);
+            log.info("END... Email sent success");
+
+            ApiResponse<CommonStatusResponse> response = new ApiResponse<CommonStatusResponse>().ok(new CommonStatusResponse(true));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorMessage.USER_REQUEST_CHANGE_EMAIL_FAIL);
+        }
+    }
+
+
+    // Todo: Verify email change
+    @PostMapping("/v1/verifyEmailChange")
+    ResponseEntity<ApiResponse<UserResponse>> verifyEmailChange(Principal principal, @Validated @RequestBody AdminVerifyEmailChangeRequest request) {
+        try {
+            User userRequest = getUserAvailable(principal.getName(), true);
+            if(Objects.isNull(userRequest)){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+            Role role = roleRepository.findById(userRequest.getRoleId()).orElse(null);
+            if(Objects.isNull(role) || !role.getRoleName().equals(com.example.learnhub.security.Role.ADMIN.name())){
+                throw new BusinessException(ErrorMessage.USER_DO_NOT_PERMISSION);
+            }
+
+
+            UserChange userChangeInMap = map.get(request.getEmailChange());
+            if(Objects.isNull(userChangeInMap)) {
+                throw new BusinessException(ErrorMessage.USER_REQUEST_INVALID);
+            }
+
+            User user = getUserAvailable(userChangeInMap.emailOrigin(),false);
+
+            User userChanged = getUserAvailable(userChangeInMap.emailChange(),true);
+
+            if(Objects.nonNull(userChanged)){
+                throw new BusinessException(ErrorMessage.USER_EMAIL_EXISTED);
+            }
+
+            if(!Objects.equals(userChangeInMap.otp(), request.getOtp())) {
+                throw new BusinessException(ErrorMessage.USER_OTP_NOT_MATCH);
+            }
+
+            assert user != null;
+            user.setEmail(request.getEmailChange());
+            user = userRepository.save(user);
+            Role roleUser = roleRepository.findById(user.getRoleId()).orElse(null);
+
+            map.remove(request.getEmailChange());
+            ApiResponse<UserResponse> response = new ApiResponse<UserResponse>().ok(new UserResponse(user,roleUser));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorMessage.USER_REQUEST_CHANGE_EMAIL_FAIL);
+        }
+    }
+
+    //TODO: GET List deleted user
+    @GetMapping("/v1/listDeleted")
+    ResponseEntity<ApiResponse<List<UserInfoResponse>>> listDeleteUser(){
+        try {
+            List<User> userList = userRepository.findAllByDeleted(true);
+            ApiResponse<List<UserInfoResponse>> response = new ApiResponse<List<UserInfoResponse>>().ok(userList.stream().map(UserInfoResponse::new).collect(Collectors.toList()));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error: {}", e.getLocalizedMessage());
+            throw new BusinessException(ErrorMessage.USER_GET_FAIL);
+        }
+
+    }
+
+
 
 }

@@ -16,7 +16,6 @@ public class UserRegisterRequest {
     private String email;
     @NotBlank
     private String fullname;
-    private String facebook;
     @NotBlank
     private String password;
 

@@ -1,6 +1,6 @@
 # LearnHub
 
-[![LearnHub Logo](logo.png)](D:\learnhub-high-resolution-logo-transparent.png)
+[![LearnHub Logo](https://imgur.com/a/mwShfe0)](https://imgur.com/a/mwShfe0)
 
 ## Description
 
@@ -26,7 +26,7 @@ To run the LearnHub backend locally, follow these steps:
 
 ## Usage
 
-- Access the API at `http://localhost:8080`
+- Access the API at `http://localhost:8084`
 
 ## Contributing
 

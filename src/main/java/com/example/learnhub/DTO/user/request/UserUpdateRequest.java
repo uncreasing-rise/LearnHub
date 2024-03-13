@@ -10,7 +10,6 @@ import lombok.ToString;
 @ToString
 public class UserUpdateRequest {
     private String fullname;
-    private String facebook;
     private String image;
     private Integer roleId;
     private Boolean enable;

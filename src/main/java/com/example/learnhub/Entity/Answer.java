@@ -1,5 +1,7 @@
 package com.example.learnhub.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,12 +17,13 @@ public class Answer {
     @Column(name = "text")
     private String text;
 
-    @Column(name = "is_correct") // Add column for correctness indicator
+    @Column(name = "is_correct")
     private boolean correct;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "question_id")
     private Question question;
 
-    // Getters and setters
+    // Constructors, getters, and setters
 }
