@@ -134,6 +134,15 @@ public class ServiceOfCourse {
         courseDTO.setStatus(course.getStatus());
         return courseDTO;
     }
+    public ResponeCourseDTO fromCourseToListResponeCourseDTO(Course course) {
+        ResponeCourseDTO courseDTO = new ResponeCourseDTO();
+        courseDTO.setCourseTitle(course.getCourseTitle());
+        courseDTO.setCoursePrice(course.getCoursePrice());
+        courseDTO.setLevel(course.getLevel());
+        Double avgRating = courseRateRepository.avgCourseRateByCourseId(course.getCourseId());
+        courseDTO.setAvgRating(avgRating != null ? avgRating : 0.0);
+        return courseDTO;
+    }
 
     public ResponeCourseDTO updateCourse(Integer courseId, CourseDTO updatedCourseDTO, List<MultipartFile> articleFiles, List<MultipartFile> videoFiles) throws CourseNotFoundException {
         // Retrieve the existing course from the database

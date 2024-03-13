@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin("*")
 @MultipartConfig
 @RestController
 @RequestMapping("/courses")
@@ -83,7 +83,7 @@ public class CourseController {
     public ResponseEntity<List<ResponeCourseDTO>> getAllCourses() {
         List<Course> courses = serviceOfCourse.getAllCourses();
         List<ResponeCourseDTO> courseDTOs = courses.stream()
-                .map(serviceOfCourse::fromCourseToResponeCourseDTO)
+                .map(serviceOfCourse::fromCourseToListResponeCourseDTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
