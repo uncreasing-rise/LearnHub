@@ -193,18 +193,28 @@ public class ServiceOfVideo implements IServiceOfVideo {
         }
     }
 
-
     @Transactional
     public boolean deleteVideoFromSection(Integer sectionId, Integer videoId) {
         try {
+            // Retrieve the section by its ID
             Optional<Section> optionalSection = sectionRepository.findById(sectionId);
             if (optionalSection.isPresent()) {
                 Section section = optionalSection.get();
+
+                // Check if the section contains only one video
+                if (section.getVideos().size() <= 1) {
+                    throw new IllegalStateException("Cannot delete the last video in the section");
+                }
+
+                // Check if the video exists in the section
                 Optional<Video> optionalVideo = videoRepository.findById(videoId);
                 if (optionalVideo.isPresent()) {
                     Video video = optionalVideo.get();
+
+                    // Delete the video from the database
                     videoRepository.delete(video);
-                    return true; // Successfully deleted article
+
+                    return true; // Successfully deleted video
                 } else {
                     throw new IllegalArgumentException("Video not found for ID: " + videoId);
                 }
@@ -217,4 +227,5 @@ public class ServiceOfVideo implements IServiceOfVideo {
             return false;
         }
     }
+
 }

@@ -6,6 +6,7 @@ import com.example.learnhub.DTO.SectionDTO;
 import com.example.learnhub.Entity.Course;
 import com.example.learnhub.Entity.Section;
 import com.example.learnhub.Exceptions.AppServiceExeption;
+import com.example.learnhub.Exceptions.SectionNotFoundException;
 import com.example.learnhub.Repository.CourseRepository;
 import com.example.learnhub.Service.ServiceOfSection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,5 +45,28 @@ public class SectionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
+    @DeleteMapping("/{sectionId}")
+    public ResponseEntity<String> deleteSection(@PathVariable Integer sectionId) {
+        try {
+            sectionService.deleteSection(sectionId);
+            return ResponseEntity.ok("Section deleted successfully");
+        } catch (SectionNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete section");
+        }
+    }
+    @PutMapping("/{sectionId}")
+    public ResponseEntity<Section> updateSection(
+            @PathVariable Integer sectionId,
+            @RequestBody SectionDTO updatedSectionDTO) {
+        try {
+            Section updatedSection = sectionService.updateSection(sectionId, updatedSectionDTO);
+            return ResponseEntity.ok(updatedSection);
+        } catch (SectionNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }

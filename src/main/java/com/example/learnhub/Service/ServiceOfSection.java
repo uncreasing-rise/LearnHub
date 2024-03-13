@@ -104,6 +104,15 @@ public class ServiceOfSection {
         sectionRepository.save(section);
         return sectionRepository.save(section);
     }
+    // Service method to delete a section by ID
+    public void deleteSection(Integer sectionId) {
+        // Check if the section exists in the database
+        Section section = sectionRepository.findById(sectionId)
+                .orElseThrow(() -> new SectionNotFoundException(sectionId));
+
+        // Delete the section from the repository
+        sectionRepository.delete(section);
+    }
 
 
 

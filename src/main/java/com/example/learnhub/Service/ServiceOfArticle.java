@@ -185,21 +185,16 @@ public class ServiceOfArticle implements IServiceOfArticle {
     }
 
     @Transactional
-    public boolean deleteArticleFromSection(Integer sectionId, Integer articleId) {
+    public boolean deleteArticleFromSection(Integer articleId) {
         try {
-            Optional<Section> optionalSection = sectionRepository.findById(sectionId);
-            if (optionalSection.isPresent()) {
-                Section section = optionalSection.get();
-                Optional<Article> optionalArticle = articleRepository.findById(articleId);
-                if (optionalArticle.isPresent()) {
-                    Article article = optionalArticle.get();
-                    articleRepository.delete(article);
-                    return true; // Successfully deleted article
-                } else {
-                    throw new IllegalArgumentException("Article not found for ID: " + articleId);
-                }
+            Optional<Article> optionalArticle = articleRepository.findById(articleId);
+            if (optionalArticle.isPresent()) {
+                Article article = optionalArticle.get();
+                // Remove the article from its associated section;
+                articleRepository.delete(article);
+                return true; // Successfully deleted article
             } else {
-                throw new IllegalArgumentException("Section not found for ID: " + sectionId);
+                throw new IllegalArgumentException("Article not found for ID: " + articleId);
             }
         } catch (Exception e) {
             // Handle delete failure
@@ -207,6 +202,7 @@ public class ServiceOfArticle implements IServiceOfArticle {
             return false;
         }
     }
+
 
     // Other methods for handling articles
 }

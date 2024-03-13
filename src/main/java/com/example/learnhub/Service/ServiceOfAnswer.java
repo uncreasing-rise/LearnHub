@@ -58,19 +58,27 @@ public class ServiceOfAnswer implements IServiceOfAnswer {
     @Transactional
     public boolean deleteAnswerFromQuestion(Integer questionId, Integer answerId) {
         try {
-            // Kiểm tra xem câu hỏi có tồn tại không
+            // Check if the question exists
             Optional<Question> optionalQuestion = questionRepository.findById(questionId);
             if (optionalQuestion.isPresent()) {
                 Question question = optionalQuestion.get();
 
-                // Lấy câu trả lời cần xóa từ câu hỏi
+                // Retrieve the answer to delete
                 Optional<Answer> optionalAnswer = answerRepository.findById(answerId);
                 if (optionalAnswer.isPresent()) {
                     Answer answer = optionalAnswer.get();
 
-                    // Kiểm tra xem câu trả lời có thuộc câu hỏi được chỉ định không
+                    // Check if the answer belongs to the specified question
                     if (answer.getQuestion().equals(question)) {
-                        // Xóa câu trả lời
+                        // Get the number of answers associated with the question
+                        int answerCount = question.getAnswers().size();
+
+                        // Check if there are only two answers associated with the question
+                        if (answerCount <= 2) {
+                            throw new IllegalStateException("Cannot delete answer. There must be at least two answers associated with the question.");
+                        }
+
+                        // Delete the answer
                         answerRepository.delete(answer);
                         return true;
                     } else {
@@ -87,5 +95,6 @@ public class ServiceOfAnswer implements IServiceOfAnswer {
             throw new RuntimeException("Failed to delete answer from question: " + e.getMessage());
         }
     }
+
 
 }

@@ -56,8 +56,8 @@ public class ServiceOfQuestion {
     }
 
     @Transactional
-    public Question updateQuestion(Quiz existingQuiz, List<QuestionDTO> questionDTOs) {
-        Question existingQuestion = null; // Declare outside try block to access it in the catch block
+    public void updateQuestion(Quiz existingQuiz, List<QuestionDTO> questionDTOs) {
+        Question existingQuestion; // Declare outside try block to access it in the catch block
         try {
             for (QuestionDTO questionDTO : questionDTOs) {
                 Optional<Question> optionalQuestion = questionRepository.findById(questionDTO.getQuestionId());
@@ -76,7 +76,6 @@ public class ServiceOfQuestion {
             e.printStackTrace();
             throw e;
         }
-        return existingQuestion;
     }
 
     @Transactional
@@ -99,17 +98,33 @@ public class ServiceOfQuestion {
             return null;
         }
     }
-
     @Transactional
     public boolean deleteQuestionFromQuiz(Integer quizId, Integer questionId) {
         try {
-            // Kiểm tra xem quiz có tồn tại không
+            // Check if the quiz exists
             if (quizRepository.existsById(quizId)) {
-                // Kiểm tra xem question có tồn tại không
+                // Retrieve the quiz
+                Quiz quiz = quizRepository.findById(quizId)
+                        .orElseThrow(() -> new IllegalArgumentException("Quiz not found for ID: " + quizId));
+
+                // Check if the question exists
                 if (questionRepository.existsById(questionId)) {
-                    // Xóa câu hỏi khỏi bài kiểm tra
-                    questionRepository.deleteById(questionId);
-                    return true; // Trả về true nếu xóa thành công
+                    // Retrieve the question
+                    Question question = questionRepository.findById(questionId)
+                            .orElseThrow(() -> new IllegalArgumentException("Question not found for ID: " + questionId));
+
+                    // Check the number of questions associated with the quiz
+                    int questionCount = quiz.getQuestions().size();
+
+                    // Check if there are two or fewer questions associated with the quiz
+                    if (questionCount <= 2) {
+                        throw new IllegalStateException("Cannot delete question. There must be at least three questions associated with the quiz.");
+                    }
+
+                    // Delete the question from the quiz
+                    quiz.getQuestions().remove(question);
+                    quizRepository.save(quiz);
+                    return true; // Return true if deletion is successful
                 } else {
                     throw new IllegalArgumentException("Question not found for ID: " + questionId);
                 }
@@ -118,7 +133,8 @@ public class ServiceOfQuestion {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return false; // Trả về false nếu xóa thất bại
+            return false; // Return false if deletion fails
         }
     }
+
 }

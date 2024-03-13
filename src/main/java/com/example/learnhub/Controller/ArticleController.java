@@ -77,12 +77,11 @@ public class ArticleController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-    @DeleteMapping("/{sectionId}/delete/{articleId}")
+    @DeleteMapping("/delete/{articleId}")
     public ResponseEntity<Void> deleteArticleFromSection(
-            @PathVariable("sectionId") Integer sectionId,
             @PathVariable("articleId") Integer articleId
     ) {
-        boolean deleted = serviceOfArticle.deleteArticleFromSection(sectionId, articleId);
+        boolean deleted = serviceOfArticle.deleteArticleFromSection(articleId);
         if (deleted) {
             return ResponseEntity.ok().build();
         } else {
