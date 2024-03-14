@@ -15,6 +15,7 @@ import java.util.*;
 import com.example.learnhub.DTO.PaymentResDTO;
 import com.example.learnhub.DTO.TransactionStatusDTO;
 import com.example.learnhub.Entity.Payment;
+import com.example.learnhub.Entity.User;
 import com.example.learnhub.Service.ServiceOfPayment;
 import com.example.learnhub.onlinePay.Config.Config;
 import jakarta.websocket.server.PathParam;
@@ -65,6 +66,7 @@ public class PaymentController {
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef + " | Total: " + total + " | UserId: " + userId);
         vnp_Params.put("vnp_OrderType", orderType);
+        vnp_Params.put("vnp_UserId", String.valueOf((userId)));
 
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", Config.vnp_ReturnUrl ); // + "?contractId=" + contractId
@@ -129,14 +131,15 @@ public class PaymentController {
             @RequestParam(value = "vnp_Amount") String amount,
             @RequestParam(value = "vnp_BankCode") String bankCode,
             @RequestParam(value = "vnp_OrderInfo") String orderInfo,
-            @RequestParam(value = "vnp_ResponseCode") String responseCode
+            @RequestParam(value = "vnp_ResponseCode") String responseCode,
+            @RequestParam(value = "vnp_UserId") Integer userId
 
     ) {
         TransactionStatusDTO transactionStatusDTO = new TransactionStatusDTO();
         if (responseCode.equals("00")) {
             transactionStatusDTO.setStatus("Ok");
             transactionStatusDTO.setMessage("Successfully");
-            transactionStatusDTO.setData("Amount: " + amount + ", Bank Code: " + bankCode + ", OrderInfo: " + orderInfo);
+            transactionStatusDTO.setData("Amount: " + amount + ", Bank Code: " + bankCode + ", UserId: " + userId + ", OrderInfo: " + orderInfo);
 
             // Create Payment entity and save it
             Payment payment = new Payment();
@@ -145,6 +148,7 @@ public class PaymentController {
             payment.setPaymentStatus("Success"); // Assuming it's successful by default
             payment.setBankCode(bankCode);
             payment.setOrderInfo(orderInfo);
+            payment.setUserId(userId);
             // You can set other fields as needed
 
             serviceOfPayment.savePayment(payment); // Save payment

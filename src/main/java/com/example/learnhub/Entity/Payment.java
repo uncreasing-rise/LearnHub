@@ -32,12 +32,8 @@ public class Payment {
     @Column(name = "OrderInfo")
     private String OrderInfo;
 
-
-
-
-    @ManyToOne
     @JoinColumn(name = "UserID")
-    private User user;
+    private int userId;
 
     public void setPaymentAmount(BigDecimal paymentAmount) {
         this.paymentAmount = paymentAmount;
@@ -72,6 +68,12 @@ public class Payment {
     public void setOrderInfo(String orderInfo) {this.OrderInfo = orderInfo;}
     public String getOrderInfo() {return OrderInfo;}
 
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
 
+    public Integer getUser() {
+        return userId;
+    }
 
 }
