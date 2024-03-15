@@ -21,6 +21,7 @@ public class Course {
     @Column(name = "CourseID")
     private Integer courseId;
 
+
     @Column(name = "course_title")
     private String courseTitle;
 
@@ -51,6 +52,9 @@ public class Course {
 
     @Column(name = "ImageURL")
     private String imageUrl;
+
+    @Column(name = "VideoURL")
+    private String videoUrl;
 
     @Column(name = "Status")
     private Integer status = 0;

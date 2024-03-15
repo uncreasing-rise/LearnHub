@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,21 +21,23 @@ public class ServiceOfCourse {
     private final CourseRateRepository courseRateRepository;
     private final ServiceOfSection serviceOfSection;
     private final ServiceOfLearningDetail serviceOfLearningDetail;
+    private final ServiceOfFile serviceOfFile;
 
     @Autowired
-    public ServiceOfCourse(CourseRepository courseRepository, CourseRateRepository courseRateRepository, ServiceOfSection serviceOfSection, ServiceOfLearningDetail serviceOfLearningDetail) {
+    public ServiceOfCourse(CourseRepository courseRepository, CourseRateRepository courseRateRepository, ServiceOfSection serviceOfSection, ServiceOfLearningDetail serviceOfLearningDetail, ServiceOfFile serviceOfFile) {
         this.courseRepository = courseRepository;
 
         this.courseRateRepository = courseRateRepository;
         this.serviceOfSection = serviceOfSection;
         this.serviceOfLearningDetail = serviceOfLearningDetail;
+        this.serviceOfFile = serviceOfFile;
     }
 
     public List<Course> getAllCourses() {
         return courseRepository.findAll();
     }
 
-    public Course createCourse(CourseDTO courseDTO) {
+    public Course createCourse(CourseDTO courseDTO, MultipartFile image, MultipartFile video) throws IOException {
         // Kiểm tra dữ liệu đầu vào
         if (courseDTO == null) {
             throw new IllegalArgumentException("CourseDTO are required");
@@ -50,6 +53,8 @@ public class ServiceOfCourse {
         course.setLevel(courseDTO.getLevel());
         course.setTag(courseDTO.getTag());
         course.setUserId(courseDTO.getUserId());
+        course.setImageUrl(serviceOfFile.uploadImage(image));
+        course.setVideoUrl(serviceOfFile.uploadVideo(video));
         // Lưu Course để có được ID của nó
         return courseRepository.save(course);
     }
@@ -113,7 +118,7 @@ public class ServiceOfCourse {
         return courseDTO;
     }
 
-    public ResponeCourseDTO fromCourseToResponeCourseDTO(Course course) {
+    public ResponeCourseDTO fromCourseToResponeCourseDTO(Course course)  {
         ResponeCourseDTO courseDTO = new ResponeCourseDTO();
         courseDTO.setCourseID(course.getCourseId());
         courseDTO.setCourseTitle(course.getCourseTitle());
@@ -126,6 +131,8 @@ public class ServiceOfCourse {
         courseDTO.setLevel(course.getLevel());
         courseDTO.setTag(course.getTag());
         courseDTO.setUserId(course.getUserId());
+        courseDTO.setImage(course.getImageUrl());
+        courseDTO.setVideoTrial(course.getVideoUrl());
         courseDTO.setSections(serviceOfSection.getSectionList(course).stream().map(serviceOfSection::fromSectionToResponeSectionDTO).toList());
         courseDTO.setCountRating(courseRateRepository.countCourseRateByCourseId(course.getCourseId()));
         Double avgRating = courseRateRepository.avgCourseRateByCourseId(course.getCourseId());
@@ -145,7 +152,7 @@ public class ServiceOfCourse {
         return courseDTO;
     }
 
-    public ResponeCourseDTO updateCourse(Integer courseId, CourseDTO updatedCourseDTO, List<MultipartFile> articleFiles, List<MultipartFile> videoFiles) throws CourseNotFoundException {
+    public ResponeCourseDTO updateCourse(Integer courseId, CourseDTO updatedCourseDTO) throws CourseNotFoundException {
         // Retrieve the existing course from the database
         Course existingCourse = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CourseNotFoundException(courseId));

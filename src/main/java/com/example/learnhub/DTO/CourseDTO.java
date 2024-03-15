@@ -24,11 +24,11 @@ public class CourseDTO {
     private String tag;
     private Integer userId;
     private LearningDetailDTO learningDetail;
-    private ImageDTO image;
+    private String image;
     private Integer status;
     private List<SectionDTO> sections = new ArrayList<>();
     private double avgRating;
     private int countRating;
     private List<ResponeSectionDTO> sections1 = new ArrayList<>();
-
+    private String Video;
 }

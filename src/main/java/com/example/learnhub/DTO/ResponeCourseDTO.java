@@ -24,7 +24,8 @@ public class ResponeCourseDTO {
     private String tag;
     private Integer userId;
     private LearningDetailDTO learningDetail;
-    private ImageDTO image;  // Added ImageDTO field
+    private String image;  // Added ImageDTO field
+    private String videoTrial;
     private Integer status;
     private List<ResponeSectionDTO> sections = new ArrayList<>();
     private double avgRating;

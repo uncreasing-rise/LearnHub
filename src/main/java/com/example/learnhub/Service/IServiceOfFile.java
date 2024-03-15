@@ -17,5 +17,9 @@ public interface IServiceOfFile {
 
     String uploadFile(MultipartFile file) throws IOException;
 
+    String uploadVideo(MultipartFile videoFile) throws IOException;
+
+    String uploadImage(MultipartFile imageFile) throws IOException;
+
     String constructFileUrl(String originalFilename);
 }

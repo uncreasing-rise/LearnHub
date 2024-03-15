@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -63,6 +64,81 @@ public class ServiceOfFile implements IServiceOfFile {
         Blob blob = storage.create(blobInfo, file.getBytes());
         // Trả về đường link của tập tin đã tải lên
         return file.getOriginalFilename();
+    }
+    @Override
+    public String uploadVideo(MultipartFile videoFile) throws IOException {
+        // Check if the uploaded file is not null and has content
+        if (videoFile == null || videoFile.isEmpty()) {
+            throw new IllegalArgumentException("Video file is null or empty");
+        }
+
+        // Extract the file extension from the original filename
+        String originalFilename = videoFile.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new IllegalArgumentException("Video file has no original filename");
+        }
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
+
+        // Validate the file extension to ensure it's a video format you support (e.g., MP4, AVI)
+        if (!isValidVideoExtension(fileExtension)) {
+            throw new IllegalArgumentException("Unsupported video file format: " + fileExtension);
+        }
+
+        // Create BlobId and BlobInfo for the video file
+        BlobId blobId = BlobId.of(bucketName, originalFilename);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType(videoFile.getContentType())
+                .build();
+
+        // Upload the video file to Google Cloud Storage
+        Blob blob = storage.create(blobInfo, videoFile.getBytes());
+
+        // Return the name of the uploaded blob
+        return constructFileUrl(blob.getName());
+    }
+
+    private boolean isValidVideoExtension(String extension) {
+        // Add supported video file extensions here (e.g., "mp4", "avi", "mov", "wmv", etc.)
+        List<String> supportedExtensions = Arrays.asList("mp4", "avi", "mov", "wmv");
+        return supportedExtensions.contains(extension.toLowerCase());
+    }
+
+    @Override
+    public String uploadImage(MultipartFile imageFile) throws IOException {
+        // Check if the uploaded file is not null and has content
+        if (imageFile == null || imageFile.isEmpty()) {
+            throw new IllegalArgumentException("Image file is null or empty");
+        }
+
+        // Extract the file extension from the original filename
+        String originalFilename = imageFile.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new IllegalArgumentException("Image file has no original filename");
+        }
+        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
+
+        // Validate the file extension to ensure it's an image format you support (e.g., PNG, JPEG)
+        if (!isValidImageExtension(fileExtension)) {
+            throw new IllegalArgumentException("Unsupported image file format: " + fileExtension);
+        }
+
+        // Create BlobId and BlobInfo for the image file
+        BlobId blobId = BlobId.of(bucketName, originalFilename);
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType(imageFile.getContentType())
+                .build();
+
+        // Upload the image file to Google Cloud Storage
+        Blob blob = storage.create(blobInfo, imageFile.getBytes());
+
+        // Return the name of the uploaded blob
+        return constructFileUrl(blob.getName());
+    }
+
+    private boolean isValidImageExtension(String extension) {
+        // Add supported image file extensions here (e.g., "png", "jpg", "jpeg", "gif", etc.)
+        List<String> supportedExtensions = Arrays.asList("png", "jpg", "jpeg", "gif");
+        return supportedExtensions.contains(extension.toLowerCase());
     }
 
     @Override

@@ -63,9 +63,11 @@ public class CourseController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponeCourseDTO createCourse(@RequestPart("courseDTO") @Valid CourseDTO courseDTO,
                                          @RequestPart("articleFiles") List<MultipartFile> articleFiles,
-                                         @RequestPart("videoFiles") List<MultipartFile> videoFiles)
+                                         @RequestPart("videoFiles") List<MultipartFile> videoFiles,
+                                         @RequestPart("videoTrial") MultipartFile videoTrial,
+                                         @RequestPart("ImageFile") MultipartFile imageCourse)
             throws AppServiceExeption, IOException {
-        Course course = serviceOfCourse.createCourse(courseDTO);
+        Course course = serviceOfCourse.createCourse(courseDTO, imageCourse, videoTrial);
 
         List<SectionDTO> sections = courseDTO.getSections();
         for (SectionDTO createSectionDTO : sections) {
