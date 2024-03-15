@@ -143,6 +143,8 @@ public class ServiceOfCourse {
     }
     public ResponeCourseDTO fromCourseToListResponeCourseDTO(Course course) {
         ResponeCourseDTO courseDTO = new ResponeCourseDTO();
+        courseDTO.setCourseID(course.getCourseId());
+        courseDTO.setImage(course.getImageUrl());
         courseDTO.setCourseTitle(course.getCourseTitle());
         courseDTO.setCoursePrice(course.getCoursePrice());
         courseDTO.setLevel(course.getLevel());
