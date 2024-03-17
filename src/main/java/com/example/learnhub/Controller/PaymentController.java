@@ -32,7 +32,7 @@ import static java.lang.System.out;
 public class PaymentController {
 
     @GetMapping("/pay/{total}/{userId}") // /{total}/{userId}
-    public String getPay(@PathVariable("total") Double total, @PathVariable("userId") Integer userId) throws UnsupportedEncodingException{ //@PathParam("price") Long price, @PathParam("id") Integer contractId
+    public String getPay(@PathVariable("total") Long total, @PathVariable("userId") Integer userId) throws UnsupportedEncodingException{ //@PathParam("price") Long price, @PathParam("id") Integer contractId
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
@@ -46,6 +46,7 @@ public class PaymentController {
         }
         //long amount = 100000 * 100;
        // double amount = total * 100;
+        //total luon luon la so khong nguyen
         long amount = (long) (total * 100);
 
         String bankCode = "NCB";
