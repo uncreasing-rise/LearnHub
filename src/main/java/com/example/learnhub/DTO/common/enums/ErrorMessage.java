@@ -39,6 +39,8 @@ public enum ErrorMessage {
     USER_QUESTION_NOT_FOUND("Question not found"),
     USER_ANSWER_NOT_FOUND("Answer not found"),
 
+    COURSE_NOT_FOUND("Course not found"),
+
     ;
 
     private final String message;
