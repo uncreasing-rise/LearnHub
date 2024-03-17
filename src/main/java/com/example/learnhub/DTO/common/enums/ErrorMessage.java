@@ -32,6 +32,12 @@ public enum ErrorMessage {
     USER_CAN_NOT_DELETE_ADMIN("User can not delete Admin"),
     USER_REQUEST_CHANGE_EMAIL_FAIL("Request to change email failed"),
     USER_REQUEST_INVALID("Request invalid"),
+    USER_SUBMIT_ANSWER_FAILED("Submit answer failed"),
+
+
+    USER_QUIZ_NOT_FOUND("Quiz not found"),
+    USER_QUESTION_NOT_FOUND("Question not found"),
+    USER_ANSWER_NOT_FOUND("Answer not found"),
 
     ;
 

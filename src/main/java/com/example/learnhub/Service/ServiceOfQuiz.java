@@ -2,31 +2,47 @@ package com.example.learnhub.Service;
 
 import com.example.learnhub.DTO.QuestionDTO;
 import com.example.learnhub.DTO.QuizDTO;
-import com.example.learnhub.Entity.Question;
-import com.example.learnhub.Entity.Quiz;
-import com.example.learnhub.Entity.Section;
-import com.example.learnhub.Repository.QuizRepository;
-import com.example.learnhub.Repository.SectionRepository;
+import com.example.learnhub.DTO.common.enums.ErrorMessage;
+import com.example.learnhub.DTO.common.response.ApiResponse;
+import com.example.learnhub.DTO.quiz.request.AnswerRequest;
+import com.example.learnhub.DTO.quiz.request.SubmitAnswerRequest;
+import com.example.learnhub.DTO.quiz.response.QuizAnswerResponse;
+import com.example.learnhub.Entity.*;
+import com.example.learnhub.Exceptions.BusinessException;
+import com.example.learnhub.Repository.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class ServiceOfQuiz {
     private final QuizRepository quizRepository;
     private final ServiceOfQuestion serviceOfQuestion;
     private final SectionRepository sectionRepository;
+    private final UserRepository userRepository;
+    private final AnswerRepository answerRepository;
+    private final AnswerAttemptRepository answerAttemptRepository;
+    private final QuizAttempRepository quizAttempRepository;
 
-    @Autowired
-    public ServiceOfQuiz(QuizRepository quizRepository, ServiceOfQuestion serviceOfQuestion, SectionRepository sectionRepository) {
-        this.quizRepository = quizRepository;
-        this.serviceOfQuestion = serviceOfQuestion;
-        this.sectionRepository = sectionRepository;
-    }
+//    @Autowired
+//    public ServiceOfQuiz(QuizRepository quizRepository, ServiceOfQuestion serviceOfQuestion, SectionRepository sectionRepository, UserRepository userRepository) {
+//        this.quizRepository = quizRepository;
+//        this.serviceOfQuestion = serviceOfQuestion;
+//        this.sectionRepository = sectionRepository;
+//
+//        this.userRepository = userRepository;
+//    }
 
     @Transactional
     public List<Quiz> createQuizzes(Section section, List<QuizDTO> quizDTOs) {
@@ -115,5 +131,91 @@ public class ServiceOfQuiz {
             e.printStackTrace();
         }
     }
+
+
+    // --------------------------------------------------------------------------
+    public ApiResponse<QuizAnswerResponse> submitProcess(SubmitAnswerRequest request) {
+        try {
+            // find user request
+            User user = userRepository.findByEmail(request.getPrincipal()).orElseThrow(
+                    () -> new BusinessException(ErrorMessage.USER_NOT_FOUND)
+            );
+            // find quiz id;
+            Quiz quiz = quizRepository.findById(request.getQuizId()).orElseThrow(
+                    () -> new BusinessException(ErrorMessage.USER_QUIZ_NOT_FOUND)
+            );
+            // find question and answer
+            List<AnswerAttempt> answerAttemptList = new ArrayList<>();
+            double totalPoint = 0.0;
+            double point = 0.0;
+            for (Question question : quiz.getQuestions()) {
+                totalPoint = totalPoint + question.getPoint().doubleValue();
+            }
+            for (AnswerRequest answerRequest : request.getAnswerRequests()) {
+                Question question = serviceOfQuestion.getQuestionById(answerRequest.getQuestionId(),false);
+                Answer answerCorrect = question.getAnswers().stream().filter(Answer::isCorrect).toList().stream().findFirst().orElse(null);
+                if(Objects.isNull(answerCorrect)) {
+                    log.error("answer correct not found, to check the list");
+                    throw new BusinessException(ErrorMessage.USER_ANSWER_NOT_FOUND);
+                }
+                Answer answerSelection = answerRepository.findByIdAndQuestion(answerRequest.getAnswerId(), question);
+                if (Objects.equals(answerCorrect.getId(), answerSelection.getId())) {
+                    point = point + question.getPoint().doubleValue();
+                }
+
+                AnswerAttempt answerAttempt = new AnswerAttempt();
+                answerAttempt.setQuestionId(question.getId());
+                answerAttempt.setSelectedAnswerId(answerSelection.getId());
+                answerAttempt.setCorrectAnswerId(answerCorrect.getId());
+
+
+                answerAttempt = answerAttemptRepository.save(answerAttempt);
+                answerAttemptList.add(answerAttempt);
+            }
+
+            QuizAttempt quizAttempt = new QuizAttempt();
+            quizAttempt.setQuiz(quiz);
+            quizAttempt.setUser(user);
+            quizAttempt.setListAnswer(answerAttemptList);
+            quizAttempt.setPoint(point);
+            quizAttempt.setTotalPoint(totalPoint);
+            quizAttempt.setStartTime(request.getStartTime());
+            quizAttempt.setEndTime(request.getEndTime());
+            quizAttempt = quizAttempRepository.save(quizAttempt);
+
+            return new ApiResponse<QuizAnswerResponse>().ok(new QuizAnswerResponse(quizAttempt));
+
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorMessage.USER_SUBMIT_ANSWER_FAILED);
+        }
+    }
+
+
+    public ApiResponse<List<QuizAnswerResponse>> getHistory(Principal principal, Integer id) {
+        try {
+            // find user request
+            User user = userRepository.findByEmailAndDeleted(principal.getName(), false).stream().findFirst().orElseThrow(
+                    () -> new BusinessException(ErrorMessage.USER_NOT_FOUND)
+            );
+            // find quiz id;
+            Quiz quiz = quizRepository.findById(id).orElseThrow(
+                    () -> new BusinessException(ErrorMessage.USER_QUIZ_NOT_FOUND)
+            );
+
+            List<QuizAttempt> quizAttemptList = quizAttempRepository.findByUserAndQuiz(user, quiz);
+
+            return new ApiResponse<List<QuizAnswerResponse>>().ok(quizAttemptList.stream().map(QuizAnswerResponse::new).collect(Collectors.toList()));
+
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorMessage.USER_GET_FAIL);
+        }
+    }
+
 
 }

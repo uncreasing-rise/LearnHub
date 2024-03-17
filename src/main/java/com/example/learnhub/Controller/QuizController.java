@@ -1,12 +1,24 @@
 package com.example.learnhub.Controller;
 
 import com.example.learnhub.DTO.QuizDTO;
+import com.example.learnhub.DTO.common.enums.ErrorMessage;
+import com.example.learnhub.DTO.common.response.ApiResponse;
+import com.example.learnhub.DTO.quiz.request.SubmitAnswerRequest;
+import com.example.learnhub.DTO.quiz.response.QuizAnswerResponse;
 import com.example.learnhub.Entity.Quiz;
+import com.example.learnhub.Entity.User;
+import com.example.learnhub.Exceptions.BusinessException;
 import com.example.learnhub.Service.ServiceOfQuiz;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
+import java.util.List;
+
 @CrossOrigin("*")
 
 @RestController
@@ -52,6 +64,33 @@ public class QuizController {
         } catch (IllegalArgumentException e) {
             // Handle invalid input or quiz not found
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+
+
+    //-----
+
+    //TODO: submit answer
+    @PostMapping("/{quizId}/submit")
+    public ResponseEntity<ApiResponse<QuizAnswerResponse>> submitAnswer(Principal principal, @PathVariable(name = "quizId") Integer quizId, @Validated @RequestBody SubmitAnswerRequest request){
+        try {
+            request.setPrincipal(principal.getName());
+            request.setQuizId(quizId);
+            ApiResponse<QuizAnswerResponse> response = serviceOfQuiz.submitProcess(request);
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        } catch (Exception e ) {
+            throw new BusinessException(ErrorMessage.USER_SUBMIT_ANSWER_FAILED);
+        }
+    }
+    //TODO: get answer history of quiz
+    @GetMapping("/{quizId}/history")
+    public ResponseEntity<ApiResponse<List<QuizAnswerResponse>>> getAnswerHistory(Principal principal,@PathVariable("quizId")Integer id) {
+        try {
+            ApiResponse<List<QuizAnswerResponse>> response = serviceOfQuiz.getHistory(principal, id);
+            return new ResponseEntity<>(response,HttpStatus.OK);
+        } catch (Exception e ) {
+            throw new BusinessException(ErrorMessage.USER_GET_FAIL);
         }
     }
 

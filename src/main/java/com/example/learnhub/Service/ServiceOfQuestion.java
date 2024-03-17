@@ -2,9 +2,11 @@ package com.example.learnhub.Service;
 
 import com.example.learnhub.DTO.AnswerDTO;
 import com.example.learnhub.DTO.QuestionDTO;
+import com.example.learnhub.DTO.common.enums.ErrorMessage;
 import com.example.learnhub.Entity.Answer;
 import com.example.learnhub.Entity.Question;
 import com.example.learnhub.Entity.Quiz;
+import com.example.learnhub.Exceptions.BusinessException;
 import com.example.learnhub.Repository.QuestionRepository;
 import com.example.learnhub.Repository.QuizRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -135,6 +138,21 @@ public class ServiceOfQuestion {
             e.printStackTrace();
             return false; // Return false if deletion fails
         }
+    }
+
+
+    public Question getQuestionById(Integer id, boolean nullable) {
+        if(Objects.isNull(id)){
+            throw new BusinessException(ErrorMessage.USER_QUESTION_NOT_FOUND);
+        }
+        Question question = questionRepository.findById(id).orElse(null);
+        if(nullable){
+            return question;
+        }
+        if(Objects.isNull(question)){
+            throw new BusinessException(ErrorMessage.USER_QUESTION_NOT_FOUND);
+        }
+        return question;
     }
 
 }

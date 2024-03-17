@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -11,7 +12,7 @@ import java.util.Date;
 public class QuizAttempt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "AttemptID")
+    @Column(name = "quizAttemptID")
     private Integer attemptId;
 
     @ManyToOne
@@ -28,4 +29,9 @@ public class QuizAttempt {
     @Column(name = "EndTime")
     private Date endTime;
 
+    @OneToMany(mappedBy = "QuizAttempt", cascade = CascadeType.ALL)
+    private List<AnswerAttempt> listAnswer;
+
+    private Double totalPoint;
+    private Double point;
 }
