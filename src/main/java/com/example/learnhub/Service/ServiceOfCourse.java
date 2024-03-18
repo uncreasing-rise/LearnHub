@@ -124,7 +124,7 @@ public class ServiceOfCourse {
         courseDTO.setCourseTitle(course.getCourseTitle());
         courseDTO.setCourseDes(course.getCourseDes());
         courseDTO.setCoursePrice(course.getCoursePrice());
-        courseDTO.setCategory(course.getCategory());
+        courseDTO.setCategoryName(course.getCategory().getCategoryName());
         courseDTO.setIsPassed(course.getIsPassed());
         courseDTO.setCourseDate(course.getCourseDate());
         courseDTO.setCoursePrice(course.getCoursePrice());

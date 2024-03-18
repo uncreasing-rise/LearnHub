@@ -41,7 +41,7 @@ public class CourseController {
 
 
     // API để hiển thị thông tin về các phần và video của một khóa học
-    @PostMapping("/showSectionAndVideo/{id}")
+    @PostMapping(   "/showSectionAndVideo/{id}")
     public ResponseEntity<ResponeCourseDTO> showSectionAndVideo(@PathVariable int id) {
         try {
             ResponeCourseDTO courseDTO = serviceOfCourse.showSectionAndVideo(id);
