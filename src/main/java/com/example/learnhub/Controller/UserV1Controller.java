@@ -22,6 +22,7 @@ import com.example.learnhub.security.UserDetailsImpl;
 import com.example.learnhub.security.jwt.JWTUtils;
 import com.example.learnhub.security.utils.AESUtils;
 import com.example.learnhub.security.utils.RandomStringGenerator;
+import com.example.learnhub.utils.FileUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -568,7 +569,7 @@ public class UserV1Controller {
             userRepository.save(user);
 
             // Return the URL of the uploaded image in the response
-            return new ResponseEntity<>(new ApiResponse<>().ok(url), HttpStatus.OK);
+            return new ResponseEntity<>(new ApiResponse<>().ok(FileUtils.getFileUrl(user.getImage())), HttpStatus.OK);
         } catch (BusinessException e) {
             // Rethrow BusinessException
             throw e;
