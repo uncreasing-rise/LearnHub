@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.awt.print.Pageable;
 import java.util.List;
 
 @Repository
@@ -64,4 +65,6 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     @Query("SELECT c FROM Course c WHERE c.courseTitle LIKE %:keyword% OR c.courseDes LIKE %:keyword%")
     List<Course> findByKeyword(@Param("keyword") String keyword);
 
+    @Query("SELECT c FROM Course c WHERE c.coursePrice BETWEEN :minPrice AND :maxPrice")
+    List<Course> findCoursesByPriceRange(@Param("minPrice") double minPrice, @Param("maxPrice") double maxPrice);
 }

@@ -89,7 +89,13 @@ public class CourseController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok().body(courseDTOs);
     }
+    @GetMapping("/courses")
+    public List<Course> getCoursesByPriceRange(
+            @RequestParam("minPrice") double minPrice,
+            @RequestParam("maxPrice") double maxPrice) {
 
+        return serviceOfCourse.getCoursesByPriceRange(minPrice, maxPrice);
+    }
 
     // API để tìm kiếm các khóa học theo từ khóa
     @GetMapping("/search")

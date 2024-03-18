@@ -66,6 +66,9 @@ public class ServiceOfCourse {
     public List<CourseDTO> fromCourseListToCourseDTOList(List<Course> courses) {
         return courses.stream().map(this::fromCourseToCourseDTO).collect(Collectors.toList());
     }
+    public List<Course> getCoursesByPriceRange(double minPrice, double maxPrice) {
+        return courseRepository.findCoursesByPriceRange(minPrice, maxPrice);
+    }
 
     public List<Course> getCoursesByDateOld() {
         return courseRepository.findAllByOrderByDateAsc();
