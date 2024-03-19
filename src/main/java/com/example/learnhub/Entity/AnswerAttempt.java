@@ -9,7 +9,7 @@ import lombok.Data;
 public class AnswerAttempt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "AttemptID")
+    @Column(name = "ansAttemptID")
     private Integer attemptId;
 
     @Id
@@ -18,6 +18,14 @@ public class AnswerAttempt {
 
     @Column(name = "SelectedAnswerID")
     private Integer selectedAnswerId;
+
+    @Column(name = "answer_correct_id")
+    private Integer correctAnswerId;
+
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "quizAttemptID", referencedColumnName = "quizAttemptID")
+    private QuizAttempt quizAttempt;
 
 
 }

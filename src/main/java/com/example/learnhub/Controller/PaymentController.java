@@ -14,11 +14,15 @@ import java.util.*;
 
 import com.example.learnhub.DTO.PaymentResDTO;
 import com.example.learnhub.DTO.TransactionStatusDTO;
-import com.example.learnhub.Entity.Payment;
-import com.example.learnhub.Entity.User;
+import com.example.learnhub.Entity.*;
+import com.example.learnhub.Repository.CartItemRepository;
+import com.example.learnhub.Repository.CartRepository;
+import com.example.learnhub.Repository.CourseRegisterRepository;
+import com.example.learnhub.Repository.UserRepository;
 import com.example.learnhub.Service.ServiceOfPayment;
 import com.example.learnhub.onlinePay.Config.Config;
 import jakarta.websocket.server.PathParam;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,10 +33,13 @@ import static java.lang.System.out;
 
 @RestController
 @CrossOrigin("*")
+@RequiredArgsConstructor
 public class PaymentController {
 
-    @GetMapping("/pay/{total}/{userId}") // /{total}/{userId}
-    public String getPay(@PathVariable("total") Double total, @PathVariable("userId") Integer userId) throws UnsupportedEncodingException{ //@PathParam("price") Long price, @PathParam("id") Integer contractId
+
+
+    @GetMapping("/pay/{cartId}/{total}/{userId}") // /{total}/{userId}
+    public String getPay(@PathVariable (name = "cartId") Integer cartId, @PathVariable("total") Long total, @PathVariable("userId") Integer userId) throws UnsupportedEncodingException{ //@PathParam("price") Long price, @PathParam("id") Integer contractId
 
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
@@ -46,11 +53,13 @@ public class PaymentController {
         }
         //long amount = 100000 * 100;
        // double amount = total * 100;
+        //total luon luon la so khong nguyen
         long amount = (long) (total * 100);
 
         String bankCode = "NCB";
 
-        String vnp_TxnRef = Config.getRandomNumber(8);
+//        String vnp_TxnRef = Config.getRandomNumber(8);
+        String vnp_TxnRef = String.format("%08d", cartId);
         String vnp_IpAddr = "127.0.0.1";
 
         String vnp_TmnCode = Config.vnp_TmnCode;
@@ -120,11 +129,15 @@ public class PaymentController {
     }
 
     private final ServiceOfPayment serviceOfPayment;
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
+    private final UserRepository userRepository;
+    private final CourseRegisterRepository courseRegisterRepository;
 
-    @Autowired
-    public PaymentController(ServiceOfPayment serviceOfPayment) {
-        this.serviceOfPayment = serviceOfPayment;
-    }
+//    @Autowired
+//    public PaymentController(ServiceOfPayment serviceOfPayment) {
+//        this.serviceOfPayment = serviceOfPayment;
+//    }
 
     @GetMapping("/pay_infor")
     public ResponseEntity<?> transactionStatusDTO(
@@ -152,6 +165,24 @@ public class PaymentController {
             // You can set other fields as needed
 
             serviceOfPayment.savePayment(payment); // Save payment
+
+
+            Cart cart = cartRepository.findByCartId(Long.valueOf(orderInfo)).stream().findFirst().orElse(null);
+            User user = userRepository.findByUserId(userId).orElse(null);
+            if(Objects.nonNull(cart) && Objects.nonNull(user)){
+                List<CartItem> cartItemList = cartItemRepository.findByCartCartId(cart.getCartId());
+                for (CartItem cartItem : cartItemList) {
+                    CourseRegister courseRegister = new CourseRegister();
+                    courseRegister.setCourse(cartItem.getCourse());
+                    courseRegister.setOrderId(cart.getCartId());
+                    courseRegister.setPaymentId(payment.getPaymentId());
+                    courseRegister.setUser(user);
+                    courseRegisterRepository.save(courseRegister);
+                }
+            }
+
+
+
         } else {
             transactionStatusDTO.setStatus("Failed");
             transactionStatusDTO.setMessage("Payment Failed");
