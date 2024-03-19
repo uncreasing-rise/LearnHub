@@ -582,7 +582,7 @@ public class UserV1Controller {
 
 
 // Todo: Add courseManager
-    @PostMapping("/v1/addCourseManage")
+       @PostMapping("/v1/addCourseManage")
     ResponseEntity<ApiResponse<UserResponse>> addCourseManageUser(Principal principal, @RequestBody AdminAddCourseManagerRequest request) {
         try {
             User userRequest = getUserAvailable(principal.getName(), true);
