@@ -35,15 +35,6 @@ public class ServiceOfQuiz {
     private final AnswerAttemptRepository answerAttemptRepository;
     private final QuizAttempRepository quizAttempRepository;
 
-//    @Autowired
-//    public ServiceOfQuiz(QuizRepository quizRepository, ServiceOfQuestion serviceOfQuestion, SectionRepository sectionRepository, UserRepository userRepository) {
-//        this.quizRepository = quizRepository;
-//        this.serviceOfQuestion = serviceOfQuestion;
-//        this.sectionRepository = sectionRepository;
-//
-//        this.userRepository = userRepository;
-//    }
-
     @Transactional
     public List<Quiz> createQuizzes(Section section, List<QuizDTO> quizDTOs) {
         List<Quiz> quizzes = new ArrayList<>();

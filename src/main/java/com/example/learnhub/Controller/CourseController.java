@@ -20,8 +20,6 @@ import com.example.learnhub.Service.ServiceOfSection;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,14 +42,6 @@ public class CourseController {
     private final ServiceOfLearningDetail serviceOfLearningDetail;
     private final CourseRegisterRepository courseRegisterRepository;
     private final UserRepository userRepository;
-
-//    @Autowired
-//    public CourseController(ServiceOfSection serviceOfSection, ServiceOfCourse courseService, CourseRepository courseRepository, ServiceOfLearningDetail serviceOfLearningDetail) {
-//        this.serviceOfSection = serviceOfSection;
-//        this.serviceOfCourse = courseService;
-//        this.courseRepository = courseRepository;
-//        this.serviceOfLearningDetail = serviceOfLearningDetail;
-//    }
 
 
     // API để hiển thị thông tin về các phần và video của một khóa học
@@ -189,7 +179,7 @@ public class CourseController {
                 throw new BusinessException(ErrorMessage.USER_NOT_FOUND);
             }
             List<CourseRegister> courseRegisterList = courseRegisterRepository.findByUser(user);
-            List<Course> courses = courseRegisterList.stream().map(CourseRegister::getCourse).collect(Collectors.toList());
+            List<Course> courses = courseRegisterList.stream().map(CourseRegister::getCourse).toList();
             List<ResponeCourseDTO> courseDTOs = courses.stream()
                     .map(serviceOfCourse::fromCourseToListResponeCourseDTO)
                     .collect(Collectors.toList());

@@ -5,14 +5,13 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "AnswerAttempt")
+@Table(name = "answer_attempt")
 public class AnswerAttempt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ansAttemptID")
+    @Column(name = "attemptid")
     private Integer attemptId;
 
-    @Id
     @Column(name = "QuestionID")
     private Integer questionId;
 
@@ -23,9 +22,10 @@ public class AnswerAttempt {
     private Integer correctAnswerId;
 
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "quizAttemptID", referencedColumnName = "quizAttemptID")
+    @ManyToOne
+    @JoinColumn(name = "quiz_attempt_id", referencedColumnName = "attemptId")
     private QuizAttempt quizAttempt;
+
 
 
 }

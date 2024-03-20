@@ -8,11 +8,11 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "QuizAttempt")
+@Table(name = "QUIZ_ATTEMPT")
 public class QuizAttempt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "quizAttemptID")
+    @Column(name = "attemptid")
     private Integer attemptId;
 
     @ManyToOne
@@ -23,15 +23,19 @@ public class QuizAttempt {
     @JoinColumn(name = "UserID")
     private User user;
 
-    @Column(name = "StartTime")
+    @Column(name = "start_time")
     private Date startTime;
 
-    @Column(name = "EndTime")
+    @Column(name = "end_time")
     private Date endTime;
 
-    @OneToMany(mappedBy = "QuizAttempt", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "quizAttempt", cascade = CascadeType.ALL)
     private List<AnswerAttempt> listAnswer;
+
 
     private Double totalPoint;
     private Double point;
+
+
+
 }

@@ -22,11 +22,9 @@ public class SimpleCORSFilter extends OncePerRequestFilter {
         response.setHeader("Access-Control-Max-Age", "1800");
         response.setHeader("Access-Control-Allow-Headers", "Origin, Authorization, Cache-Control, Pragma, Content-Type, Accept, Accept-Encoding, X-Requested-With, remember-me");
         response.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
-
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         response.setHeader("Pragma", "no-cache");
         response.setHeader("Expires", "0");
-
         filterChain.doFilter(request, response);
     }
 }
