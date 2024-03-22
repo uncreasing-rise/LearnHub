@@ -1,5 +1,6 @@
 package com.example.learnhub.Service;
 
+import com.example.learnhub.DTO.CommentDTO;
 import com.example.learnhub.Entity.Comment;
 import com.example.learnhub.Entity.Course;
 import com.example.learnhub.Entity.User;
@@ -9,6 +10,8 @@ import com.example.learnhub.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -38,6 +41,7 @@ public class ServiceOfComment {
         comment.setUser(user);
         comment.setCourse(course);
         comment.setCommentText(commentText);
+        comment.setCreatedDate(LocalDateTime.now());
 
         commentRepository.save(comment);
         return comment;
@@ -61,5 +65,10 @@ public class ServiceOfComment {
     // Method to delete a comment
     public void deleteComment(Integer commentId) {
         commentRepository.deleteById(commentId);
+    }
+
+    public List<Comment> findByCourseID(Integer courseId) {
+        return commentRepository.findByCourse(courseId) ;
+
     }
 }

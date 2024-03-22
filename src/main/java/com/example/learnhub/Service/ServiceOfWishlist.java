@@ -8,6 +8,9 @@ import com.example.learnhub.Repository.CourseRepository;
 import com.example.learnhub.Repository.UserRepository;
 import com.example.learnhub.Repository.WishlistRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+
 @Service
 public class ServiceOfWishlist implements IServiceOfWishlist {
 
@@ -20,7 +23,10 @@ public class ServiceOfWishlist implements IServiceOfWishlist {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
     }
-
+    public boolean checkIfInWishlist(Integer courseId, Integer userId) {
+        // Implement the logic to check if the course is in the wishlist for the given user
+        return wishlistRepository.existsByCourse_CourseIdAndUser_UserId(courseId, userId);
+    }
     @Override
     public WishlistDTO addToWishList(WishlistDTO wishlistDTO) {
         // Kiểm tra xem khoá học đã tồn tại trong wishlist chưa
@@ -58,5 +64,13 @@ public class ServiceOfWishlist implements IServiceOfWishlist {
         wishlistDTO.setUserId(wishlist.getUser().getUserId());
         wishlistDTO.setCourseId(wishlist.getCourse().getCourseId());
         return wishlistDTO;
+    }
+
+    public void deleteWishlistItemByCourseIdAndUserId(Integer courseId, Integer userId) {
+        wishlistRepository.deleteWishlistItemByCourseIdAndUserId(courseId, userId);
+    }
+
+    public List<Wishlist> getAllWishlistItemsByUserId(Integer userId) {
+        return wishlistRepository.getAllWishlistItemsByUserId(userId);
     }
 }

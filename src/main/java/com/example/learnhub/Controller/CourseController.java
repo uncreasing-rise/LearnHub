@@ -1,11 +1,13 @@
 package com.example.learnhub.Controller;
 
+import com.example.learnhub.DTO.CommentDTO;
 import com.example.learnhub.DTO.CourseDTO;
 import com.example.learnhub.DTO.ResponeCourseDTO;
 import com.example.learnhub.DTO.SectionDTO;
 import com.example.learnhub.DTO.common.enums.ErrorMessage;
 import com.example.learnhub.DTO.common.response.ApiResponse;
 import com.example.learnhub.DTO.user.response.CommonStatusResponse;
+import com.example.learnhub.Entity.Comment;
 import com.example.learnhub.Entity.Course;
 import com.example.learnhub.Entity.CourseRegister;
 import com.example.learnhub.Entity.User;
@@ -14,6 +16,7 @@ import com.example.learnhub.Exceptions.BusinessException;
 import com.example.learnhub.Repository.CourseRegisterRepository;
 import com.example.learnhub.Repository.CourseRepository;
 import com.example.learnhub.Repository.UserRepository;
+import com.example.learnhub.Service.ServiceOfComment;
 import com.example.learnhub.Service.ServiceOfCourse;
 import com.example.learnhub.Service.ServiceOfLearningDetail;
 import com.example.learnhub.Service.ServiceOfSection;
@@ -35,6 +38,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/courses")
 @RequiredArgsConstructor
 public class CourseController {
+    private final ServiceOfComment serviceOfComment;
 
     private final ServiceOfSection serviceOfSection;
     private final ServiceOfCourse serviceOfCourse;
@@ -60,6 +64,27 @@ public class CourseController {
     public List<CourseDTO> findAllCourseByPrice(@PathVariable double price) {
         List<Course> courses = courseRepository.findByPrice(price);
         return serviceOfCourse.fromCourseListToCourseDTOList(courses);
+    }
+
+    @GetMapping("/{courseId}/comments")
+    public List<CommentDTO> getCommentsForCourse(@PathVariable Integer courseId) {
+        // Call the service or repository to retrieve comments for the course with the specified ID
+        List<Comment> comments = serviceOfComment.findByCourseID(courseId);
+        return mapToDTO(comments);
+    }
+
+    private List<CommentDTO> mapToDTO(List<Comment> comments) {
+        List<CommentDTO> commentDTOs = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentDTO dto = new CommentDTO();
+            dto.setUserName(comment.getUser().getFullName());
+            dto.setCommentText(comment.getCommentText());
+            dto.setUserImage(comment.getUser().getImage());
+            dto.setCreatedDate(comment.getCreatedDate());
+            // Map other properties as needed
+            commentDTOs.add(dto);
+        }
+        return commentDTOs;
     }
 
     // API để thêm mới một khóa học

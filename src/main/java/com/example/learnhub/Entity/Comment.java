@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "Comment")
@@ -24,6 +26,7 @@ public class Comment {
     @JoinColumn(name = "CourseID")
     private Course course;
 
-
+    @Column(name = "CreatedDate")
+    private LocalDateTime createdDate;
 
 }

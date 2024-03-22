@@ -29,7 +29,7 @@ public class UserResponse {
         this.id = user.getUserId();
         this.email = user.getEmail();
         this.fullname = user.getFullName();
-        this.image = Objects.equals("url", user.getImage()) ? user.getImage() : FileUtils.getFileUrl(user.getImage());
+        this.image = user.getImage();
         this.role = role == null ? null : role.getRoleName();
         this.enable = user.getEnable();
         this.deleted = user.getDeleted();

@@ -1,9 +1,7 @@
 package com.example.learnhub.Entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "Blog")
 public class Blog {
+    @GeneratedValue
     @Id
     @Column(name = "ID")
     private Integer id;
@@ -25,10 +24,15 @@ public class Blog {
     @Column(name = "Description")
     private String description;
 
-    @Column(name = "Category_ID")
-    private Integer categoryId;
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "category_id")
+    private Category category;
+
 
     @Column(name = "CreatedDate")
     private LocalDateTime createdDate;
+
+    private String ImageUrl;
 
 }

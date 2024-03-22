@@ -77,7 +77,13 @@ public class ServiceOfCourse {
     public List<Course> getCoursesByDateNew() {
         return courseRepository.findAllByOrderByDateDesc();
     }
+    public List<Course> getCoursesByCategory(String category) {
+        return courseRepository.findByCategory(category);
+    }
 
+    public List<Course> findCoursesByKeyword(String keyword) {
+        return courseRepository.findByKeyword(keyword);
+    }
     public List<Course> getCoursesByPriceHigher() {
         return courseRepository.findAllByOrderByPriceDesc();
     }
@@ -86,13 +92,7 @@ public class ServiceOfCourse {
         return courseRepository.findAllByOrderByPriceAsc();
     }
 
-    public List<Course> getCoursesByCategory(String category) {
-        return courseRepository.findByCategory(category);
-    }
 
-    public List<Course> findCoursesByKeyword(String keyword) {
-        return courseRepository.findByKeyword(keyword);
-    }
 
     public ResponeCourseDTO showSectionAndVideo(@RequestParam int id) {
         Course course = courseRepository.findById(id);

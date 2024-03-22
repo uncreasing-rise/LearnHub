@@ -11,4 +11,7 @@ public class WishlistDTO {
     private Integer wishlistId;
     private Integer userId;
     private Integer courseId;
+    private String courseImage;
+    private String courseTitle;
+    private String courseCategory;
 }

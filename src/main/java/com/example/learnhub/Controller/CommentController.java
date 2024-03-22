@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 @CrossOrigin("*")
 
@@ -23,11 +24,20 @@ public class CommentController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Comment> createComment(@RequestBody CommentDTO commentDTO) {
+    public ResponseEntity<CommentDTO> createComment(@RequestBody CommentDTO commentDTO) {
         Comment createdComment = serviceOfComment.leaveCommentAtCourse(commentDTO.getUserId(), commentDTO.getCourseId(), commentDTO.getCommentText());
-        return new ResponseEntity<>(createdComment, HttpStatus.CREATED);
+        CommentDTO createdCommentDTO = mapToDTO(createdComment);
+        return new ResponseEntity<>(createdCommentDTO, HttpStatus.CREATED);
     }
-
+    private CommentDTO mapToDTO(Comment comment) {
+        CommentDTO commentDTO = new CommentDTO();
+        commentDTO.setUserId(comment.getUser().getUserId());
+        commentDTO.setCourseId(comment.getCourse().getCourseId());
+        commentDTO.setCommentText(comment.getCommentText());
+        commentDTO.setCreatedDate(comment.getCreatedDate());
+        // Map other properties as needed
+        return commentDTO;
+    }
     @PutMapping("/{id}")
     public ResponseEntity<Comment> updateComment(@PathVariable Integer id, @RequestBody CommentDTO updatedCommentDTO) {
         Comment updatedComment = serviceOfComment.updateComment(id, updatedCommentDTO.getCommentText());
@@ -50,6 +60,7 @@ public class CommentController {
             return ResponseEntity.notFound().build();
         }
     }
+
 
     // Add more methods for retrieving multiple comments, searching, etc.
 }
