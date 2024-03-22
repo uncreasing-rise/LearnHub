@@ -43,7 +43,7 @@ public class BlogController {
     }
 
     @PostMapping
-    public ResponseEntity<BlogDTO> createBlog(@RequestBody BlogDTO blogDTO, @RequestPart MultipartFile image) throws IOException {
+    public ResponseEntity<BlogDTO> createBlog(@RequestPart BlogDTO blogDTO, @RequestPart MultipartFile image) throws IOException {
         Blog createdBlog = serviceOfBlog.createBlog(blogDTO,image);
         return new ResponseEntity<>(convertToDTO(createdBlog), HttpStatus.CREATED);
     }
