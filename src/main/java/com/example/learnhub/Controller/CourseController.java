@@ -86,8 +86,6 @@ public class CourseController {
         }
         return commentDTOs;
     }
-
-    // API để thêm mới một khóa học
     @PostMapping("/addCourse")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponeCourseDTO createCourse(@RequestPart("courseDTO") @Valid CourseDTO courseDTO,
@@ -99,14 +97,28 @@ public class CourseController {
         Course course = serviceOfCourse.createCourse(courseDTO, imageCourse, videoTrial);
 
         List<SectionDTO> sections = courseDTO.getSections();
-        for (SectionDTO createSectionDTO : sections) {
-            serviceOfSection.createSection(createSectionDTO, course, articleFiles, videoFiles);
+
+        int articleIndex = 0;
+        int videoIndex = 0;
+
+        for (SectionDTO section : sections) {
+            int articleFilesInSection = section.getArticles().size();
+            int videoFilesInSection = section.getVideos().size();
+
+            List<MultipartFile> sectionArticleFiles = articleFiles.subList(articleIndex, articleIndex + articleFilesInSection);
+            List<MultipartFile> sectionVideoFiles = videoFiles.subList(videoIndex, videoIndex + videoFilesInSection);
+
+            serviceOfSection.createSection(section, course, sectionArticleFiles, sectionVideoFiles);
+
+            articleIndex += articleFilesInSection;
+            videoIndex += videoFilesInSection;
         }
 
         serviceOfLearningDetail.createLearningDetail(courseDTO.getLearningDetail(), course);
 
         return serviceOfCourse.fromCourseToResponeCourseDTO(course);
     }
+
 
 
     // API để lấy tất cả các khóa học
@@ -186,9 +198,9 @@ public class CourseController {
         return ResponseEntity.ok().body(courseDTOs);
     }
 
-    // API để xóa một khóa học
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCourse(@PathVariable int id) {
+    // API to delete a course
+    @DeleteMapping
+    public ResponseEntity<Void> deleteCourse(@RequestParam("id") int id) {
         serviceOfCourse.deleteCourse(id);
         return ResponseEntity.noContent().build();
     }

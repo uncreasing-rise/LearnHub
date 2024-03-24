@@ -1,6 +1,7 @@
 package com.example.learnhub.Repository;
 
 import com.example.learnhub.DTO.WishlistDTO;
+import com.example.learnhub.Entity.Course;
 import com.example.learnhub.Entity.Wishlist;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,5 +25,7 @@ public interface WishlistRepository extends JpaRepository<Wishlist, Integer> {
 
     @Query("SELECT c FROM Wishlist c WHERE c.user.userId = :userId")
     List<Wishlist> getAllWishlistItemsByUserId(Integer userId);
+
+    void deleteByCourse_CourseId(int courseid);
 }
 

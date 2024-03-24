@@ -3,8 +3,9 @@ package com.example.learnhub.Service;
 import com.example.learnhub.DTO.*;
 import com.example.learnhub.Entity.*;
 import com.example.learnhub.Exceptions.CourseNotFoundException;
-import com.example.learnhub.Repository.CourseRateRepository;
-import com.example.learnhub.Repository.CourseRepository;
+import com.example.learnhub.Repository.*;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,6 +17,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class ServiceOfCourse {
+    private final LearningDetailRepository learningDetailRepository;
+    private final SectionRepository sectionRepository;
+    private final WishlistRepository wishlistRepository;
 
     private final CourseRepository courseRepository;
     private final CourseRateRepository courseRateRepository;
@@ -24,7 +28,10 @@ public class ServiceOfCourse {
     private final ServiceOfFile serviceOfFile;
 
     @Autowired
-    public ServiceOfCourse(CourseRepository courseRepository, CourseRateRepository courseRateRepository, ServiceOfSection serviceOfSection, ServiceOfLearningDetail serviceOfLearningDetail, ServiceOfFile serviceOfFile) {
+    public ServiceOfCourse(LearningDetailRepository learningDetailRepository, SectionRepository sectionRepository, WishlistRepository wishlistRepository, CourseRepository courseRepository, CourseRateRepository courseRateRepository, ServiceOfSection serviceOfSection, ServiceOfLearningDetail serviceOfLearningDetail, ServiceOfFile serviceOfFile) {
+        this.learningDetailRepository = learningDetailRepository;
+        this.sectionRepository = sectionRepository;
+        this.wishlistRepository = wishlistRepository;
         this.courseRepository = courseRepository;
 
         this.courseRateRepository = courseRateRepository;
@@ -59,7 +66,21 @@ public class ServiceOfCourse {
         return courseRepository.save(course);
     }
 
+    @Transactional
     public void deleteCourse(int courseId) {
+
+        learningDetailRepository.deleteByCourse_CourseId(courseId);
+        sectionRepository.deleteAnswersByCourseId(courseId);
+        sectionRepository.deleteQuestionsByCourseId(courseId);
+
+        sectionRepository.deleteQuizzesByCourseId(courseId);
+        sectionRepository.deleteArticlesByCourseId(courseId);
+        sectionRepository.deleteVideosByCourseId(courseId);
+
+        sectionRepository.deleteSectionsByCourseID(courseId);
+
+        wishlistRepository.deleteByCourse_CourseId(courseId);
+        // Delete the course
         courseRepository.deleteById(courseId);
     }
 
