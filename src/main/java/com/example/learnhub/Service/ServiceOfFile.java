@@ -57,14 +57,19 @@ public class ServiceOfFile implements IServiceOfFile {
 
     @Override
     public String uploadFile(MultipartFile file) throws IOException {
-        BlobId blobId = BlobId.of(bucketName, Objects.requireNonNull(file.getOriginalFilename()));
+        String originalFilename = file.getOriginalFilename();
+        // Loại bỏ các khoảng trắng và ký tự đặc biệt từ tên file
+        String cleanedFilename = originalFilename.replaceAll("[^a-zA-Z0-9.-]", "");
+
+        BlobId blobId = BlobId.of(bucketName, Objects.requireNonNull(cleanedFilename));
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType(file.getContentType())
                 .build();
         Blob blob = storage.create(blobInfo, file.getBytes());
         // Trả về đường link của tập tin đã tải lên
-        return file.getOriginalFilename();
+        return cleanedFilename;
     }
+
     @Override
     public String uploadVideo(MultipartFile videoFile) throws IOException {
         // Check if the uploaded file is not null and has content
@@ -77,7 +82,12 @@ public class ServiceOfFile implements IServiceOfFile {
         if (originalFilename == null) {
             throw new IllegalArgumentException("Video file has no original filename");
         }
-        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
+
+        // Clean up the filename to remove special characters and spaces
+        String cleanedFilename = originalFilename.replaceAll("[^a-zA-Z0-9.-]", "");
+
+        // Get the file extension from the cleaned filename
+        String fileExtension = cleanedFilename.substring(cleanedFilename.lastIndexOf('.') + 1);
 
         // Validate the file extension to ensure it's a video format you support (e.g., MP4, AVI)
         if (!isValidVideoExtension(fileExtension)) {
@@ -85,7 +95,7 @@ public class ServiceOfFile implements IServiceOfFile {
         }
 
         // Create BlobId and BlobInfo for the video file
-        BlobId blobId = BlobId.of(bucketName, originalFilename);
+        BlobId blobId = BlobId.of(bucketName, cleanedFilename);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType(videoFile.getContentType())
                 .build();
@@ -97,6 +107,7 @@ public class ServiceOfFile implements IServiceOfFile {
         return constructFileUrl(blob.getName());
     }
 
+
     private boolean isValidVideoExtension(String extension) {
         // Add supported video file extensions here (e.g., "mp4", "avi", "mov", "wmv", etc.)
         List<String> supportedExtensions = Arrays.asList("mp4", "avi", "mov", "wmv");
@@ -105,7 +116,6 @@ public class ServiceOfFile implements IServiceOfFile {
 
     @Override
     public String uploadImage(MultipartFile imageFile) throws IOException {
-        // Check if the uploaded file is not null and has content
         if (imageFile == null || imageFile.isEmpty()) {
             throw new IllegalArgumentException("Image file is null or empty");
         }
@@ -115,7 +125,12 @@ public class ServiceOfFile implements IServiceOfFile {
         if (originalFilename == null) {
             throw new IllegalArgumentException("Image file has no original filename");
         }
-        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf('.') + 1);
+
+        // Clean up the filename to remove special characters and spaces
+        String cleanedFilename = originalFilename.replaceAll("[^a-zA-Z0-9.-]", "");
+
+        // Get the file extension from the cleaned filename
+        String fileExtension = cleanedFilename.substring(cleanedFilename.lastIndexOf('.') + 1);
 
         // Validate the file extension to ensure it's an image format you support (e.g., PNG, JPEG)
         if (!isValidImageExtension(fileExtension)) {
@@ -123,7 +138,7 @@ public class ServiceOfFile implements IServiceOfFile {
         }
 
         // Create BlobId and BlobInfo for the image file
-        BlobId blobId = BlobId.of(bucketName, originalFilename);
+        BlobId blobId = BlobId.of(bucketName, cleanedFilename);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType(imageFile.getContentType())
                 .build();
@@ -134,6 +149,7 @@ public class ServiceOfFile implements IServiceOfFile {
         // Return the name of the uploaded blob
         return constructFileUrl(blob.getName());
     }
+
 
     private boolean isValidImageExtension(String extension) {
         // Add supported image file extensions here (e.g., "png", "jpg", "jpeg", "gif", etc.)
