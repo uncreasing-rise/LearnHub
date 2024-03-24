@@ -28,4 +28,6 @@ public interface CommentRepository extends JpaRepository<Comment, Integer> {
 
     @Query("SELECT c FROM Comment c WHERE c.course.courseId = :courseId")
     List<Comment> findByCourse(@Param("courseId") Integer courseId);
+
+    void deleteByCourse_CourseId(int courseId);
 }

@@ -23,10 +23,7 @@ public class ServiceOfWishlist implements IServiceOfWishlist {
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
     }
-    public boolean checkIfInWishlist(Integer courseId, Integer userId) {
-        // Implement the logic to check if the course is in the wishlist for the given user
-        return wishlistRepository.existsByCourse_CourseIdAndUser_UserId(courseId, userId);
-    }
+
     @Override
     public WishlistDTO addToWishList(WishlistDTO wishlistDTO) {
         // Kiểm tra xem khoá học đã tồn tại trong wishlist chưa
@@ -72,5 +69,11 @@ public class ServiceOfWishlist implements IServiceOfWishlist {
 
     public List<Wishlist> getAllWishlistItemsByUserId(Integer userId) {
         return wishlistRepository.getAllWishlistItemsByUserId(userId);
+    }
+
+    public boolean checkIfInWishlist(Integer courseId, Integer userId) {
+        Wishlist wishlistItem = wishlistRepository.findByCourse_CourseIdAndUser_UserId(courseId, userId);
+        return wishlistItem != null;
+
     }
 }

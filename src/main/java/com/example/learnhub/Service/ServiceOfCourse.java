@@ -20,6 +20,7 @@ public class ServiceOfCourse {
     private final LearningDetailRepository learningDetailRepository;
     private final SectionRepository sectionRepository;
     private final WishlistRepository wishlistRepository;
+    private final CommentRepository commentRepository;
 
     private final CourseRepository courseRepository;
     private final CourseRateRepository courseRateRepository;
@@ -28,10 +29,11 @@ public class ServiceOfCourse {
     private final ServiceOfFile serviceOfFile;
 
     @Autowired
-    public ServiceOfCourse(LearningDetailRepository learningDetailRepository, SectionRepository sectionRepository, WishlistRepository wishlistRepository, CourseRepository courseRepository, CourseRateRepository courseRateRepository, ServiceOfSection serviceOfSection, ServiceOfLearningDetail serviceOfLearningDetail, ServiceOfFile serviceOfFile) {
+    public ServiceOfCourse(LearningDetailRepository learningDetailRepository, SectionRepository sectionRepository, WishlistRepository wishlistRepository, CommentRepository commentRepository, CourseRepository courseRepository, CourseRateRepository courseRateRepository, ServiceOfSection serviceOfSection, ServiceOfLearningDetail serviceOfLearningDetail, ServiceOfFile serviceOfFile) {
         this.learningDetailRepository = learningDetailRepository;
         this.sectionRepository = sectionRepository;
         this.wishlistRepository = wishlistRepository;
+        this.commentRepository = commentRepository;
         this.courseRepository = courseRepository;
 
         this.courseRateRepository = courseRateRepository;
@@ -72,7 +74,7 @@ public class ServiceOfCourse {
         learningDetailRepository.deleteByCourse_CourseId(courseId);
         sectionRepository.deleteAnswersByCourseId(courseId);
         sectionRepository.deleteQuestionsByCourseId(courseId);
-
+        commentRepository.deleteByCourse_CourseId(courseId);
         sectionRepository.deleteQuizzesByCourseId(courseId);
         sectionRepository.deleteArticlesByCourseId(courseId);
         sectionRepository.deleteVideosByCourseId(courseId);
@@ -172,6 +174,7 @@ public class ServiceOfCourse {
         courseDTO.setCourseTitle(course.getCourseTitle());
         courseDTO.setCoursePrice(course.getCoursePrice());
         courseDTO.setLevel(course.getLevel());
+        courseDTO.setCourseDate(course.getCourseDate());
         courseDTO.setCategoryName(course.getCategory().getCategoryName());
         Double avgRating = courseRateRepository.avgCourseRateByCourseId(course.getCourseId());
         courseDTO.setAvgRating(avgRating != null ? avgRating : 0.0);

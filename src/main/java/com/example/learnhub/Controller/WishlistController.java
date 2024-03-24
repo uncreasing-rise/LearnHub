@@ -30,11 +30,7 @@ public class WishlistController {
         WishlistDTO addedWishlistItem = wishlistService.addToWishList(wishlistDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(addedWishlistItem);
     }
-    @GetMapping("/check/{courseId}/{userId}")
-    public ResponseEntity<Boolean> checkIfInWishlist(@PathVariable Integer courseId, @PathVariable Integer userId) {
-        boolean isInWishlist = wishlistService.checkIfInWishlist(courseId, userId);
-        return ResponseEntity.ok(isInWishlist);
-    }    // Endpoint to delete a course from the wishlist by wishlistId
+// Endpoint to delete a course from the wishlist by wishlistId
     @DeleteMapping("/delete/{courseId}/{userId}")
     public ResponseEntity<Void> deleteWishlistItem(@PathVariable Integer courseId, @PathVariable Integer userId) {
         wishlistService.deleteWishlistItemByCourseIdAndUserId(courseId, userId);
@@ -59,5 +55,12 @@ public class WishlistController {
         // Map other properties from Wishlist to WishlistDTO
         return dto;
     }
+
+    @GetMapping("/check/{courseId}/{userId}")
+    public ResponseEntity<Boolean> checkIfInWishlist(@PathVariable Integer courseId, @PathVariable Integer userId) {
+        boolean isInWishlist = wishlistService.checkIfInWishlist(courseId, userId);
+        return ResponseEntity.ok(isInWishlist);
+    }
+
     // Other endpoints for retrieving, updating, and deleting wishlist items
 }
