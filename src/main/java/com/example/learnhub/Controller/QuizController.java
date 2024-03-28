@@ -67,6 +67,21 @@ public class QuizController {
         }
     }
 
+    @GetMapping("/{quizId}")
+    public ResponseEntity<QuizDTO> getQuiz(@PathVariable("quizId") Integer quizId) {
+        try {
+            QuizDTO quizDTO = serviceOfQuiz.getQuizById(quizId);
+            if (quizDTO != null) {
+                return ResponseEntity.ok(quizDTO);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BusinessException(ErrorMessage.USER_GET_QUIZ_FAILED);
+        }
+    }
 
 
     //-----

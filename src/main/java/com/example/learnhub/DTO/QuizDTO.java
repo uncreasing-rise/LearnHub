@@ -1,5 +1,6 @@
 package com.example.learnhub.DTO;
 
+import com.example.learnhub.Entity.Question;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ public class QuizDTO {
     private String quizDescription;
     private List<QuestionDTO> questions;
     private SectionDTO sectionDTO;
+    private List<Question> question;
     public QuizDTO(Integer id, String title, List<QuestionDTO> questionDTOS) {
     }
 }

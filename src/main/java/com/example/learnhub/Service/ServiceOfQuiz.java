@@ -59,6 +59,27 @@ public class ServiceOfQuiz {
         return quiz;
     }
 
+    @Transactional(readOnly = true)
+    public QuizDTO getQuizById(Integer quizId) {
+        try {
+            Quiz quiz = quizRepository.findById(quizId).orElseThrow(() -> new BusinessException(ErrorMessage.QUIZ_NOT_FOUND));
+            return convertToQuizDTO(quiz);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorMessage.GET_QUIZ_FAILED);
+        }
+    }
+
+    private QuizDTO convertToQuizDTO(Quiz quiz) {
+        QuizDTO quizDTO = new QuizDTO();
+        quizDTO.setQuizId(quiz.getId());
+        quizDTO.setQuizTitle(quiz.getTitle());
+        quizDTO.setQuestion(quiz.getQuestions());
+        return quizDTO;
+    }
+
     @Transactional
     public void updateQuiz(QuizDTO quizDTO) {
         try {

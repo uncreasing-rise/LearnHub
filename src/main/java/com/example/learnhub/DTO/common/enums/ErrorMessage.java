@@ -41,7 +41,7 @@ public enum ErrorMessage {
 
     COURSE_NOT_FOUND("Course not found"),
 
-    ;
+    QUIZ_NOT_FOUND("Quiz not found"), GET_QUIZ_FAILED("Get quiz fail"), USER_GET_QUIZ_FAILED("GET QUIZ FAIL");
 
     private final String message;
 
