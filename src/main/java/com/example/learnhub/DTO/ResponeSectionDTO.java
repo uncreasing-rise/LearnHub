@@ -19,5 +19,6 @@ public class ResponeSectionDTO {
     private List<Article> articles; // List of URLs for videos
     private List<Video> videos; // List of URLs for articles
     private List<Quiz> quizzes; // List of URLs for articles
+    private List<Integer> quizId;
 
 }

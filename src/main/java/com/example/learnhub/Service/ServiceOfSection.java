@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -38,17 +39,25 @@ public class ServiceOfSection {
         sectionDTO.setCourse(section.getCourse());
         return sectionDTO;
     }
-    public ResponeSectionDTO fromSectionToResponeSectionDTO(Section section)
-    {
+    public ResponeSectionDTO fromSectionToResponeSectionDTO(Section section) {
         ResponeSectionDTO sectionDTO = new ResponeSectionDTO();
         sectionDTO.setSectionId(section.getSectionId());
         sectionDTO.setSectionName(section.getSectionName());
         sectionDTO.setQuizzes(section.getQuizzes());
+        if (section.getQuizzes() != null && !section.getQuizzes().isEmpty()) {
+            List<Integer> quizIds = new ArrayList<>();
+            for (Quiz quiz : section.getQuizzes()) {
+                quizIds.add(quiz.getId());
+            }
+            sectionDTO.setQuizId(quizIds);
+        }
+
         sectionDTO.setArticles(section.getArticles());
         sectionDTO.setVideos(section.getVideos());
-//        sectionDTO.setCourse(section.getCourse());
+
         return sectionDTO;
     }
+
     public Section createSection(SectionDTO dto, Course course, List<MultipartFile> articleFiles, List<MultipartFile> videoFiles) throws AppServiceExeption, IOException {
         Section section = new Section();
         section.setSectionName(dto.getSectionName());
