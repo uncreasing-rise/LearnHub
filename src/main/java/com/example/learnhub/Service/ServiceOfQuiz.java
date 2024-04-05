@@ -77,6 +77,14 @@ public class ServiceOfQuiz {
         quizDTO.setQuizId(quiz.getId());
         quizDTO.setQuizTitle(quiz.getTitle());
         quizDTO.setQuestion(quiz.getQuestions());
+// Assuming quizDTO is an instance of QuizDTO and quiz is an instance of Quiz
+// Calculate the total points using stream operations
+        double totalPoints = quiz.getQuestions().stream()
+                .mapToInt(question -> question.getPoint())
+                .sum();
+
+// Set the total points to quizDTO
+        quizDTO.setTotalPoint(totalPoints);
         return quizDTO;
     }
 

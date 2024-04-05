@@ -24,7 +24,6 @@ public class QuizAnswerResponse {
     private Integer quizId;
     List<Question> questionList;
     List<AnswerAttempt> answerList;
-
     public Double totalPoint;
     public Double point;
 

@@ -17,6 +17,7 @@ public class QuizDTO {
     private List<QuestionDTO> questions;
     private SectionDTO sectionDTO;
     private List<Question> question;
+    private Double totalPoint;
     public QuizDTO(Integer id, String title, List<QuestionDTO> questionDTOS) {
     }
 }
